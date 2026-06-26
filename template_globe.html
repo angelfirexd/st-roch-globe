@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>St. Roch &amp; the Panikpakuttuk family &middot; Two journeys through the Northwest Passage (1940-1946)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@^5/dist/maplibre-gl.css">
+<style>
+:root{
+  --ink:#0b1c25; --panel:#0f2531; --panel2:#13303d; --line:rgba(150,186,201,.14);
+  --text:#e9f2f6; --muted:#9db4c0; --faint:#6d8896;
+  --frost:#6cc6e0; --brass:#d6a64a;
+  --c1940:#3f8ee0; --c1941:#2fb061; --c1942:#f5933a; --c1944:#d9568f; --cwinter:#e9f4fb;
+  --routeV1:#ecc24f; --routeV2:#45c8dd;
+  --famPink:#ff5ea8; --famPink2:#c23a7a; --famTeal:#2bb3a3; --famSled:#8b6cff;
+  --serif:'Fraunces',Georgia,serif; --sans:'Inter',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--sans);background:var(--ink);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+.app{display:flex;height:100dvh;width:100%}
+.sidebar{flex:0 0 376px;max-width:376px;background:var(--ink);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;overscroll-behavior:contain}
+.sidebar::-webkit-scrollbar{width:9px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(150,186,201,.18);border-radius:8px;border:2px solid var(--ink)}
+.head{padding:22px 22px 16px;border-bottom:1px solid var(--line)}
+.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--frost);display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(108,198,224,.5),transparent)}
+.title{font-family:var(--serif);font-weight:600;font-size:42px;line-height:.94;letter-spacing:-.01em;margin:0}
+.title .ital{font-style:italic;font-weight:500}
+.title-fam{display:block;font-family:var(--serif);font-style:italic;font-weight:600;font-size:.42em;line-height:1.12;color:var(--brass);margin-top:9px;letter-spacing:.01em}
+.subtitle{font-family:var(--mono);font-size:12px;color:var(--text);margin-top:10px;letter-spacing:.01em}
+.daterange{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:3px}
+.blurb{font-size:13px;line-height:1.55;color:var(--muted);margin-top:14px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:18px}
+.stat{background:var(--panel);padding:12px 13px}
+.stat .v{font-family:var(--serif);font-weight:600;font-size:24px;line-height:1;color:var(--text)}
+.stat .v.mono{font-family:var(--mono);font-weight:500;font-size:19px;letter-spacing:-.02em}
+.stat .l{font-size:11px;color:var(--muted);margin-top:5px}
+.stat .s{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:2px}
+.flyrow{display:flex;gap:9px;align-items:center;margin-top:16px}
+.flybtn{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(180deg,#e7b658,#cf9a3c);color:#1a1206;border:none;border-radius:10px;padding:13px 16px;font-family:var(--sans);font-weight:600;font-size:13.5px;letter-spacing:.01em;cursor:pointer;box-shadow:0 6px 18px -8px rgba(214,166,74,.8);transition:transform .12s ease,filter .12s ease}
+.flybtn:hover{filter:brightness(1.06)}
+.flybtn:active{transform:translateY(1px)}
+.flybtn .ic{width:0;height:0;border-left:11px solid #1a1206;border-top:7px solid transparent;border-bottom:7px solid transparent;margin-left:2px;flex:none}
+.flybtn.playing .ic{border:none;width:11px;height:12px;margin-left:0;background:linear-gradient(90deg,#1a1206 0 38%,transparent 38% 62%,#1a1206 62% 100%)}
+.resetbtn{flex:0 0 auto;width:46px;height:46px;border-radius:10px;background:var(--panel2);color:var(--muted);border:1px solid var(--line);cursor:pointer;font-size:17px;display:none;align-items:center;justify-content:center}
+.resetbtn:hover{color:var(--text);border-color:rgba(150,186,201,.3)}
+body.armed .resetbtn{display:flex}
+.fambtn{margin-top:12px;width:100%;background:linear-gradient(180deg,rgba(255,126,182,.16),rgba(255,90,60,.16));color:#ffd9e6;border:1px solid rgba(255,126,182,.5);border-radius:10px;padding:11px 10px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;transition:border-color .12s,color .12s,background .12s}
+.fambtn:hover{border-color:rgba(255,126,182,.85);color:#fff}
+body.familymode .fambtn{background:rgba(255,90,60,.24);color:#fff;border-color:rgba(255,90,60,.75)}
+.speedrow{display:flex;align-items:center;gap:10px;margin-top:14px}
+.speedlabel{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+#speedSlider{flex:1;height:4px;accent-color:var(--brass);cursor:pointer}
+.speedval{font-family:var(--mono);font-size:11px;color:var(--text);width:42px;text-align:right}
+.legend{display:flex;flex-direction:column;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.legend-row{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.legend-label{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);width:100%;margin-bottom:-3px}
+.lg{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.lg .dot{width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55)}
+.lg .ln{width:20px;height:0;border-top:3px solid var(--routeV1);border-radius:2px}
+.lg .ln.v2{border-top-color:var(--routeV2)}
+.lg .fl{font-size:12px;color:var(--frost)}
+.yffield{margin-top:16px}
+.yflabel{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:7px}
+.yearfilter{display:flex;flex-wrap:wrap;gap:6px}
+.yfbtn{flex:1;min-width:44px;background:var(--panel2);color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:7px 4px;font-family:var(--mono);font-size:11px;cursor:pointer;transition:border-color .12s,background .12s,color .12s}
+.yfbtn:hover{border-color:rgba(150,186,201,.35)}
+.yfbtn.on{background:rgba(214,166,74,.2);color:#fff !important;border-color:rgba(214,166,74,.55)}
+.famstory-field{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+.famstory-chip{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 13px;border-radius:10px;border:1px solid rgba(43,179,163,.4);background:linear-gradient(180deg,rgba(43,179,163,.1),rgba(255,94,168,.06));color:#dff4f1;font-family:var(--sans);font-size:13px;cursor:pointer;transition:border-color .12s,background .12s}
+.famstory-chip:hover{border-color:rgba(43,179,163,.75);background:linear-gradient(180deg,rgba(43,179,163,.18),rgba(255,94,168,.1))}
+.famstory-chip .fs-dot{width:11px;height:11px;border-radius:50%;flex:none;background:linear-gradient(135deg,#2bb3a3,#ff5ea8)}
+.famstory-chip .fs-route{background:linear-gradient(90deg,#ff5ea8 0 33%,#8b6cff 33% 66%,#2bb3a3 66% 100%)}
+.famstory-chip.on{border-color:rgba(255,94,168,.8);background:linear-gradient(180deg,rgba(43,179,163,.22),rgba(255,94,168,.16));color:#fff}
+body.familymode .famstory-field{display:none}
+body.familymode .flyrow,body.familymode .yffield,body.familymode .legend,body.familymode #timeline,body.familymode #stats{display:none}
+.famstats{display:none;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid rgba(255,94,168,.4);border-radius:10px;overflow:hidden;margin-top:18px}
+body.familymode .famstats{display:grid}
+.famstat{background:rgba(20,12,18,.6);padding:14px 14px 13px}
+.famstat .v{font-family:var(--serif);font-size:28px;line-height:1;color:#fff}
+.famstat .v.mono{font-family:var(--mono);font-size:22px;letter-spacing:-.01em}
+.famstat .l{font-size:12px;color:#ffc4e4;margin-top:6px}
+.famstat .s{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+.famfilter{display:none}
+body.familymode .famfilter{display:flex;flex-wrap:wrap;gap:6px;padding:14px 14px 4px}
+.famchip{font-family:var(--mono);font-size:10.5px;letter-spacing:.03em;padding:5px 9px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .12s}
+.famchip .cdot{width:9px;height:9px;border-radius:50%;flex:none}
+.famchip.on{color:#fff;border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.08)}
+.famchip:not(.on){opacity:.5}
+.famtimeline{display:none}
+body.familymode .famtimeline{display:block;padding:4px 14px 30px}
+.fam-ti{display:flex;gap:11px;padding:9px 6px;border-radius:9px;cursor:pointer;border:1px solid transparent;transition:background .12s,border-color .12s}
+.fam-ti:hover{background:rgba(255,255,255,.04)}
+.fam-ti.active{background:rgba(255,94,168,.12);border-color:rgba(255,94,168,.4)}
+.fam-ti-num{flex:none;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:600;color:#160d12;margin-top:1px}
+.fam-ti-num.k-est{border:1.5px dashed #160d12}
+.fam-ti-body{min-width:0}
+.fam-ti-ttl{font-family:var(--serif);font-size:14px;color:#fff;line-height:1.2}
+.fam-ti-place{font-size:11px;color:var(--muted);margin-top:2px}
+.fam-ti-date{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em;margin-top:3px;text-transform:uppercase}
+.timeline{padding:4px 14px 30px}
+.voyage-head{padding:18px 8px 4px;margin-top:10px;border-top:1px solid var(--line)}
+.voyage-head.first{border-top:none;margin-top:2px}
+.voyage-code{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+.voyage-title{font-family:var(--serif);font-weight:600;font-size:23px;margin-top:1px;line-height:1}
+.voyage-sub{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:3px}
+.group{margin-top:12px}
+.group-head{padding:9px 8px 7px;position:sticky;top:0;background:linear-gradient(180deg,var(--ink) 72%,transparent);z-index:2}
+.group-title{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--text)}
+.group-sub{font-size:11px;color:var(--faint);margin-top:2px}
+.group-items{position:relative;padding-left:6px}
+.group-items::before{content:"";position:absolute;left:23px;top:6px;bottom:14px;width:2px;background:linear-gradient(180deg,var(--line),rgba(150,186,201,.04));border-radius:2px}
+.stop-item{position:relative;display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:7px 8px;border-radius:9px;color:inherit;font:inherit;transition:background .12s ease}
+.stop-item:hover{background:rgba(150,186,201,.07)}
+.stop-item.active{background:rgba(214,166,74,.12);box-shadow:inset 0 0 0 1px rgba(214,166,74,.35)}
+.chip{position:relative;flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:500;color:#0a1822;border:2px solid rgba(255,255,255,.82);z-index:1;transition:transform .12s ease}
+.chip.winter{color:#10303d}
+.stop-item:hover .chip{transform:scale(1.08)}
+.chip-flake{position:absolute;right:-4px;bottom:-4px;font-size:10px;color:var(--frost);text-shadow:0 0 4px rgba(8,20,28,.9)}
+.stop-tx{display:flex;flex-direction:column;min-width:0}
+.stop-place{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stop-item.active .stop-place{color:#fff}
+.stop-date{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:1px}
+.stop-item.reached .chip{box-shadow:0 0 0 3px rgba(108,198,224,.18)}
+.foot{padding:16px 22px 26px;border-top:1px solid var(--line);font-size:11px;color:var(--faint);line-height:1.5}
+.foot button{background:none;border:none;color:var(--frost);font:inherit;cursor:pointer;padding:0;text-decoration:underline}
+.map-wrap{flex:1 1 auto;position:relative;min-width:0}
+#map{position:absolute;inset:0;background:#06121a}
+.maplibregl-map{font-family:var(--sans)}
+
+/* anchorage markers */
+.stop-div{background:none;border:none;cursor:pointer}
+.stop-marker{position:relative;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:11px;font-weight:500;color:#091722;border:2px solid rgba(255,255,255,.9);box-shadow:0 2px 6px rgba(0,0,0,.45);transition:transform .14s ease,box-shadow .14s ease}
+.stop-marker .num{line-height:1}
+.stop-marker.winter{color:#10303d;border-color:var(--frost);box-shadow:0 0 0 3px rgba(108,198,224,.25),0 2px 6px rgba(0,0,0,.45)}
+.stop-marker .flake{position:absolute;right:-5px;bottom:-5px;font-size:11px;color:var(--frost);text-shadow:0 0 4px #06121a}
+.stop-div:hover .stop-marker{transform:scale(1.12)}
+.stop-div.is-active .stop-marker{transform:scale(1.22);box-shadow:0 0 0 4px rgba(214,166,74,.45),0 3px 9px rgba(0,0,0,.5)}
+.stop-marker.pop{animation:markerpop .5s cubic-bezier(.2,.8,.3,1.5)}
+@keyframes markerpop{0%{transform:scale(0);opacity:0}55%{transform:scale(1.2);opacity:1}100%{transform:scale(1)}}
+body.familymode .stop-div{opacity:.16;filter:grayscale(.6);pointer-events:none}
+.ship-div{background:none;border:none}
+.ship-inner{width:30px;height:30px;display:grid;place-items:center;transition:transform .12s linear;filter:drop-shadow(0 0 7px rgba(255,210,127,.75))}
+.fam-div{background:none;border:none;cursor:pointer}
+.fam-num{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-family:var(--mono);font-size:11px;font-weight:600;border:2px solid #160d12;box-shadow:0 1px 4px rgba(0,0,0,.5);transition:transform .14s ease}
+.fam-div:hover .fam-num{transform:scale(1.14)}
+.fam-num.est{border-style:dashed;border-width:2.5px;opacity:.95}
+.fam-num.evt{box-shadow:0 0 0 3px rgba(7,18,26,.9),0 0 0 6px rgba(255,255,255,.85),0 0 0 9px rgba(255,94,168,.5)}
+.fam-side-div{background:none;border:none;cursor:pointer}
+.fam-side-dot{width:13px;height:13px;border-radius:50%;background:rgba(139,108,255,.55);border:2px solid var(--famSled);box-shadow:0 0 0 2px rgba(139,108,255,.25)}
+.fam-ship-div{background:none;border:none}
+.fam-ship-inner{width:30px;height:30px;display:grid;place-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.6));transition:transform .14s linear}
+
+.readout{position:absolute;top:14px;left:50%;transform:translateX(-50%) translateY(-8px);z-index:1200;background:rgba(11,28,37,.86);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:12px;padding:9px 18px;min-width:230px;max-width:min(440px,calc(100% - 120px));text-align:center;opacity:0;pointer-events:none;transition:opacity .3s ease,transform .3s ease;box-shadow:0 10px 30px -12px rgba(0,0,0,.7)}
+.readout.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.ro-date{font-family:var(--mono);font-size:18px;font-weight:500;letter-spacing:.02em;color:#fff}
+.ro-status{font-size:11px;color:var(--frost);margin-top:2px;font-family:var(--mono);letter-spacing:.04em}
+.logcard{position:absolute;right:16px;top:62px;z-index:1300;width:min(384px,calc(100% - 32px));background:rgba(13,37,49,.94);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:0 18px 44px -14px rgba(0,0,0,.78),0 2px 8px rgba(0,0,0,.4);opacity:0;transform:translateY(14px) scale(.98);pointer-events:none;transition:opacity .3s ease,transform .3s ease;max-height:min(56vh,460px);overflow-y:auto;cursor:grab;touch-action:none}
+.logcard.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.logcard.dragging{cursor:grabbing;transition:none;box-shadow:0 26px 60px -16px rgba(0,0,0,.85),0 3px 10px rgba(0,0,0,.5)}
+.logcard .lc-desc{cursor:auto;touch-action:pan-y}
+.logcard.flash{animation:cardflash .7s ease}
+@keyframes cardflash{0%{box-shadow:0 0 0 0 rgba(214,166,74,0),0 12px 34px -14px rgba(0,0,0,.7)}28%{box-shadow:0 0 0 2px rgba(214,166,74,.6),0 16px 40px -14px rgba(0,0,0,.85)}100%{box-shadow:0 0 0 0 rgba(214,166,74,0),0 12px 34px -14px rgba(0,0,0,.7)}}
+.logcard-close{position:absolute;top:9px;right:11px;background:none;border:none;color:var(--faint);font-size:19px;cursor:pointer;line-height:1}
+.logcard-close:hover{color:var(--text)}
+.lc-eb{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding-right:18px}
+.lc-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+#lc-eb-text{color:var(--frost)}
+.lc-place{font-family:var(--serif);font-weight:600;font-size:22px;margin:8px 0 0;line-height:1.08}
+.lc-meta{display:flex;flex-wrap:wrap;gap:3px 14px;margin:7px 0 10px;font-family:var(--mono);font-size:11px}
+.lc-meta #lc-date{color:var(--text)}
+.lc-coord{color:var(--faint)}
+.lc-desc{font-size:13px;line-height:1.55;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+.lc-desc p{margin:0 0 7px}
+.lc-desc p:last-child{margin-bottom:0}
+.lc-muted{font-style:italic;color:var(--faint)}
+
+.transport{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:1250;display:flex;align-items:center;gap:10px;background:rgba(11,28,37,.92);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:16px;padding:8px 14px;box-shadow:0 14px 34px -14px rgba(0,0,0,.75);max-width:calc(100% - 28px)}
+.tbtn{width:34px;height:34px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1;transition:border-color .12s,background .12s;flex:none}
+.tbtn:hover{border-color:rgba(150,186,201,.4);background:rgba(20,48,62,.8)}
+.tbtn.tplay{width:42px;height:42px;background:linear-gradient(180deg,#e7b658,#cf9a3c);color:#1a1206;border:none;font-size:16px}
+.tbtn.tplay:hover{filter:brightness(1.05)}
+.tscrub{width:240px;max-width:42vw;height:4px;accent-color:var(--brass);cursor:pointer}
+.ttime{font-family:var(--mono);font-size:11px;color:var(--text);min-width:88px;text-align:right;letter-spacing:.02em}
+.famtransport{display:none;border-color:rgba(255,110,199,.4)}
+body.familymode .famtransport{display:flex}
+body.familymode .transport:not(.famtransport){display:none}
+.famtransport .tbtn.tplay.famplay{background:linear-gradient(180deg,#ff84cf,#e85ab0);color:#2a0c20}
+.famtransport .tscrub{accent-color:var(--famPink)}
+
+.famlegend{display:none;position:absolute;left:14px;top:108px;z-index:1180;background:rgba(11,24,31,.92);backdrop-filter:blur(10px);border:1px solid rgba(255,110,199,.35);border-radius:13px;padding:13px 15px;max-width:264px;box-shadow:0 14px 34px -14px rgba(0,0,0,.7)}
+body.familymode .famlegend{display:block}
+.fl-title{font-family:var(--serif);font-weight:600;font-size:15px;color:#ffd9ee;margin-bottom:8px}
+.fl-row{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--frost);margin:5px 0}
+.fl-key{width:22px;height:0;border-radius:2px;flex:none}
+.fl-kship{border-top:4px solid var(--famPink)}
+.fl-k1945{border-top:4px solid var(--famPink2)}
+.fl-ksled{height:4px;border-top-width:0;background:repeating-linear-gradient(90deg,var(--famSled) 0 5px,transparent 5px 11px)}
+.fl-knas{border-top:4px solid var(--famTeal)}
+.fl-kest{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.5);border:1.5px dashed #cfd9df}
+.fl-hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:9px;border-top:1px solid var(--line);padding-top:8px}
+
+.mapbtn{position:absolute;z-index:1200;width:38px;height:38px;border-radius:9px;background:rgba(11,28,37,.9);border:1px solid var(--line);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;backdrop-filter:blur(6px)}
+.mapbtn:hover{border-color:rgba(150,186,201,.34)}
+.mapbtn svg{width:18px;height:18px;display:block}
+.mapbtn.on{border-color:rgba(214,166,74,.5);color:var(--brass)}
+.info-btn{top:14px;right:14px}
+.fs-btn{top:14px;right:58px}
+.layers-btn{top:14px;left:14px}
+.menu-btn{top:14px;left:14px;display:none}
+body.has-menu .layers-btn{left:58px}
+.layers-panel{position:absolute;top:60px;left:14px;z-index:1250;width:212px;background:rgba(11,28,37,.94);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:13px 14px;box-shadow:0 16px 40px -14px rgba(0,0,0,.8);opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .18s ease,transform .18s ease}
+.layers-panel.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.lp-label{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:2px 0 7px}
+.lp-label.mt{margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}
+.lp-opt{display:flex;align-items:center;gap:9px;padding:5px 4px;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--muted)}
+.lp-opt:hover{background:rgba(150,186,201,.07);color:var(--text)}
+.lp-opt input{accent-color:var(--brass);width:14px;height:14px;cursor:pointer}
+
+.maplibregl-ctrl-group{background:rgba(11,28,37,.9)!important;border:1px solid var(--line)!important;box-shadow:0 6px 18px -10px rgba(0,0,0,.7)!important;backdrop-filter:blur(6px)}
+.maplibregl-ctrl-group button+button{border-top:1px solid var(--line)!important}
+.maplibregl-ctrl-group button{background:transparent}
+.maplibregl-ctrl button:not(:disabled):hover{background:var(--panel2)!important}
+.maplibregl-ctrl button .maplibregl-ctrl-icon{filter:invert(.92)}
+.maplibregl-ctrl-attrib{background:rgba(11,28,37,.78)!important;color:var(--faint)!important}
+.maplibregl-ctrl-attrib a{color:var(--frost)!important}
+.maplibregl-ctrl-attrib-button{filter:invert(.92)}
+.maplibregl-ctrl-scale{background:rgba(11,28,37,.66)!important;color:var(--text)!important;border-color:var(--line)!important}
+
+.voyage-popup .maplibregl-popup-content{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 40px -14px rgba(0,0,0,.8);padding:14px 16px}
+.voyage-popup .maplibregl-popup-tip{border-top-color:var(--panel)!important;border-bottom-color:var(--panel)!important}
+.voyage-popup .maplibregl-popup-close-button{color:var(--faint);font-size:18px;padding:4px 8px 0 0}
+.voyage-popup .maplibregl-popup-close-button:hover{color:var(--text);background:none}
+.pop-eb{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.pop-dot{width:9px;height:9px;border-radius:50%}
+.pop-phase{color:var(--frost)}
+.pop-place{font-family:var(--serif);font-weight:600;font-size:20px;margin:7px 0 0;line-height:1.1}
+.pop-meta{display:flex;flex-wrap:wrap;gap:4px 14px;margin:7px 0 9px;font-family:var(--mono);font-size:11px}
+.pop-date{color:var(--text)}
+.pop-coord{color:var(--faint)}
+.pop-desc{font-size:12.5px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line);padding-top:9px;max-width:280px}
+.pop-desc p{margin:0 0 6px}
+.pop-desc p:last-child{margin-bottom:0}
+.pop-muted{font-style:italic;color:var(--faint)}
+
+.scrim{position:fixed;inset:0;background:rgba(4,11,16,.62);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:1400}
+.scrim.show{opacity:1;pointer-events:auto}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%);z-index:2000;width:min(560px,calc(100% - 36px));max-height:84vh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:28px 30px;box-shadow:0 30px 80px -20px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%)}
+.modal h2{font-family:var(--serif);font-weight:600;font-size:25px;margin:0}
+.modal .mono-sub{font-family:var(--mono);font-size:11px;color:var(--frost);margin-top:5px;letter-spacing:.04em}
+.modal #modalBody{margin-top:16px;font-size:13.5px;line-height:1.62;color:var(--muted)}
+.modal #modalBody p{margin:0 0 11px}
+.modal #modalBody p:last-child{margin-bottom:0}
+.modal .fs-h{font-family:var(--serif);font-size:16px;font-weight:600;color:#ffd9ee;margin:18px 0 2px}
+.modal #modalBody .fs-h:first-child{margin-top:2px}
+.modal .close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--faint);font-size:24px;line-height:1;cursor:pointer}
+.modal .close:hover{color:var(--text)}
+.welcome-scrim{position:fixed;inset:0;background:rgba(4,12,18,.7);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:2100}
+.welcome-scrim.show{opacity:1;pointer-events:auto}
+.welcome{position:fixed;top:50%;left:50%;transform:translate(-50%,-48%) scale(.98);width:min(560px,calc(100% - 32px));max-height:88vh;overflow:auto;background:linear-gradient(180deg,rgba(16,40,53,.99),rgba(9,24,33,.99));border:1px solid var(--line);border-radius:18px;padding:30px 32px;box-shadow:0 30px 70px -20px rgba(0,0,0,.85);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:2101}
+.welcome.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.wc-title{font-family:var(--serif);font-weight:600;font-size:27px;line-height:1.12;margin:0 0 4px;color:#fff}
+.wc-lead{font-size:14.5px;line-height:1.55;color:var(--frost);margin:0 0 14px}
+.wc-list{list-style:none;padding:0;margin:0 0 14px;display:flex;flex-direction:column;gap:11px}
+.wc-list li{font-size:13.5px;line-height:1.55;color:var(--frost);padding-left:18px;position:relative}
+.wc-list li:before{content:'';position:absolute;left:0;top:8px;width:7px;height:7px;border-radius:50%;background:var(--brass)}
+.wc-list b{color:#fff}
+.wc-note{font-size:11.5px;line-height:1.5;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin:0 0 18px}
+.wc-start{width:100%;background:linear-gradient(180deg,#e7b658,#cf9a3c);color:#1a1206;border:none;border-radius:11px;padding:13px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+.wc-start:hover{filter:brightness(1.05)}
+
+@media (max-width:820px){
+  .app{flex-direction:column}
+  .sidebar{position:fixed;inset:0 auto 0 0;width:min(86vw,376px);flex-basis:auto;max-width:none;z-index:1600;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1)}
+  body.nav-open .sidebar{transform:translateX(0)}
+  .map-wrap{flex:1 1 auto;height:100dvh}
+  .menu-btn{display:flex}
+  .logcard{right:10px;left:10px;top:auto;bottom:78px;width:auto;max-height:38vh}
+  .transport{bottom:12px;gap:7px;padding:7px 10px;border-radius:13px}
+  .ttime{min-width:64px}
+  .famlegend{top:84px;max-width:210px;padding:10px 12px}
+  .readout{top:60px}
+  .title{font-size:38px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="head">
+      <div class="eyebrow" id="eyebrow">Northwest Passage &middot; 1940&ndash;1946</div>
+      <h1 class="title" id="title"></h1>
+      <div class="subtitle" id="subtitle"></div>
+      <div class="daterange" id="daterange"></div>
+      <p class="blurb" id="blurb"></p>
+      <div class="stats" id="stats"></div>
+      <div class="famstats" id="famstats"></div>
+      <div class="flyrow">
+        <button class="flybtn" id="flyBtn"><span class="ic"></span><span class="fly-label">St.&nbsp;Roch Northwest voyages</span></button>
+        <button class="resetbtn" id="resetBtn" title="Reset">&#10227;</button>
+      </div>
+      <button class="fambtn" id="famBtn">Panikpakuttuk family&rsquo;s journey</button>
+      <div class="speedrow">
+        <span class="speedlabel">Replay speed</span>
+        <input type="range" id="speedSlider" min="0.1" max="3" step="0.05" value="1" aria-label="Replay speed">
+        <span class="speedval" id="speedVal">1&times;</span>
+      </div>
+      <div class="legend" id="legend"></div>
+      <div class="yffield">
+        <div class="yflabel">Show stops by year</div>
+        <div class="yearfilter" id="yearfilter">
+          <button class="yfbtn on" data-year="all">All</button>
+          <button class="yfbtn on" data-year="1940">1940</button>
+          <button class="yfbtn on" data-year="1941">1941</button>
+          <button class="yfbtn on" data-year="1942">1942</button>
+          <button class="yfbtn on" data-year="1944">1944</button>
+        </div>
+      </div>
+      <div class="famstory-field">
+        <button class="famstory-chip" id="famRouteBtn"><span class="fs-dot fs-route"></span><span>1944&ndash;1946 Panikpakuttuk route</span></button>
+        <button class="famstory-chip" id="famStoryBtn"><span class="fs-dot"></span><span>Read the family&rsquo;s story</span></button>
+      </div>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="famfilter" id="famfilter"></div>
+    <div class="famtimeline" id="famtimeline"></div>
+    <div class="foot">Course lines are hand&#8209;drawn approximations through the historical channels. <button id="aboutLink">About this map &amp; the routes</button></div>
+  </aside>
+  <div class="map-wrap">
+    <div id="map"></div>
+    <button class="mapbtn menu-btn" id="menuBtn" aria-label="Open voyage log">&#9776;</button>
+    <button class="mapbtn layers-btn" id="layersBtn" aria-label="Map layers" title="Map layers">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 13 9 5 9-5"/></svg>
+    </button>
+    <button class="mapbtn fs-btn" id="fsBtn" aria-label="Fullscreen" title="Fullscreen"></button>
+    <button class="mapbtn info-btn" id="infoBtn" aria-label="How to use this map" title="How to use this map">&#9432;</button>
+    <div class="layers-panel" id="layersPanel">
+      <div class="lp-label">Basemap</div>
+      <label class="lp-opt"><input type="radio" name="base" value="ocean" checked> Ocean chart</label>
+      <label class="lp-opt"><input type="radio" name="base" value="sat"> Satellite</label>
+      <label class="lp-opt"><input type="radio" name="base" value="topo"> Terrain</label>
+      <label class="lp-opt"><input type="radio" name="base" value="light"> Light</label>
+      <label class="lp-opt"><input type="radio" name="base" value="dark"> Night</label>
+      <div class="lp-label mt">Layers</div>
+      <label class="lp-opt"><input type="checkbox" id="optLabels"> Place labels</label>
+      <label class="lp-opt"><input type="checkbox" id="optTerrain"> 3D terrain</label>
+    </div>
+    <div class="readout" id="readout"><div class="ro-date" id="ro-date"></div><div class="ro-status" id="ro-status"></div></div>
+    <div class="logcard" id="logcard">
+      <button class="logcard-close" id="logcardClose" aria-label="Dismiss">&times;</button>
+      <div class="lc-eb"><span class="lc-dot" id="lc-dot"></span><span id="lc-eb-text"></span></div>
+      <h3 class="lc-place" id="lc-place"></h3>
+      <div class="lc-meta"><span id="lc-date"></span><span class="lc-coord" id="lc-coord"></span></div>
+      <div class="lc-desc" id="lc-desc"></div>
+    </div>
+    <div class="transport" id="transport">
+      <button class="tbtn" id="tPrev" title="Previous stop" aria-label="Previous stop">&#9198;</button>
+      <button class="tbtn tplay" id="tPlay" title="Play" aria-label="Play">&#9654;</button>
+      <button class="tbtn" id="tNext" title="Next stop" aria-label="Next stop">&#9197;</button>
+      <input type="range" class="tscrub" id="tScrub" min="0" max="1000" value="0" aria-label="Voyage timeline">
+      <span class="ttime" id="tTime">1940</span>
+    </div>
+    <div class="transport famtransport" id="famTransport">
+      <button class="tbtn" id="famPrev" title="Previous stage" aria-label="Previous stage">&#9198;</button>
+      <button class="tbtn tplay famplay" id="famPlay" title="Play the family&rsquo;s journey" aria-label="Play">&#9654;</button>
+      <button class="tbtn" id="famNext" title="Next stage" aria-label="Next stage">&#9197;</button>
+      <input type="range" class="tscrub" id="famScrub" min="0" max="1000" value="0" aria-label="Family timeline">
+      <span class="ttime" id="famTime">Aug 1944</span>
+    </div>
+    <div class="famlegend" id="famlegend">
+      <div class="fl-title">The Panikpakuttuk family</div>
+      <div class="fl-row"><span class="fl-key fl-kship"></span>By ship &mdash; the St.&nbsp;Roch (1944)</div>
+      <div class="fl-row"><span class="fl-key fl-k1945"></span>St.&nbsp;Roch, carried west (1945)</div>
+      <div class="fl-row"><span class="fl-key fl-ksled"></span>By dog sled (1946)</div>
+      <div class="fl-row"><span class="fl-key fl-knas"></span>By a different ship &mdash; the Nascopie</div>
+      <div class="fl-row"><span class="fl-key fl-kest"></span>Estimated location</div>
+      <div class="fl-hint">Press &#9654; to follow their two&#8209;year journey home, 1944&#8211;1946. The faint grey line is the St.&nbsp;Roch sailing on without them.</div>
+    </div>
+    <div class="scrim" id="scrim"></div>
+    <div class="modal" id="modal">
+      <button class="close" id="modalClose" aria-label="Close">&times;</button>
+      <h2 id="modalTitle"></h2>
+      <div class="mono-sub" id="modalSub"></div>
+      <div id="modalBody"></div>
+    </div>
+    <div class="welcome-scrim" id="welcomeScrim"></div>
+    <div class="welcome" id="welcome">
+      <button class="close" id="welcomeClose" aria-label="Close">&times;</button>
+      <h2 class="wc-title">Two journeys</h2>
+      <p class="wc-lead">This map follows two crossings of the Northwest Passage: the RCMP ship <b>St.&nbsp;Roch</b>, and the <b>Panikpakuttuk family</b> &mdash; the Inuit family who made the 1944 crossing and took two years to get home.</p>
+      <ul class="wc-list">
+        <li>Play the voyages with the bar at the bottom; the speed slider sets the pace.</li>
+        <li>Tap <b>&ldquo;Panikpakuttuk family&rsquo;s journey&rdquo;</b> for their story &mdash; solid&nbsp;=&nbsp;ship, dashed&nbsp;=&nbsp;dog sled.</li>
+        <li>Drag the globe to spin it; the layers button switches basemaps and 3D terrain.</li>
+      </ul>
+      <p class="wc-note">A draft for the Vancouver Maritime Museum. All Inuit content is under the authority of the project&rsquo;s Inuit consultants and is not cleared for public use.</p>
+      <button class="wc-start" id="welcomeStart">Start</button>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/maplibre-gl@^5/dist/maplibre-gl.js"></script>
+<script>
+const VOYAGE = __DATA__;
+
+const V = VOYAGE, C = V.colors, FAM = V.family || null;
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const root = document.documentElement.style;
+Object.entries(C.years).forEach(function(e){ root.setProperty('--c'+e[0], e[1]); });
+root.setProperty('--cwinter', C.winter);
+root.setProperty('--routeV1', C.routeV1); root.setProperty('--routeV2', C.routeV2);
+root.setProperty('--frost', C.frost); root.setProperty('--brass', C.brass);
+if(FAM){ root.setProperty('--famPink',FAM.colors.st_roch); root.setProperty('--famPink2',FAM.colors.st_roch_1945); root.setProperty('--famTeal',FAM.colors.nascopie); root.setProperty('--famSled',FAM.colors.sled); }
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function el(tag, cls, txt){ const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+function colorForStop(s){ return s.year==='winter' ? C.winter : C.years[s.year]; }
+function fmtCoord(lat,lng){ const la=Math.abs(lat).toFixed(3)+'\u00b0'+(lat>=0?'N':'S'); const lo=Math.abs(lng).toFixed(3)+'\u00b0'+(lng>=0?'E':'W'); return la+'  '+lo; }
+function fmtDate(ms){ const d=new Date(ms); return d.getUTCDate()+' '+MONTHS[d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+function LL(p){ return [p[1], p[0]]; }
+
+const t=el('span'); t.innerHTML='St.&nbsp;<span class="ital">Roch</span><span class="title-fam">&amp; the Panikpakuttuk family</span>';
+document.getElementById('title').appendChild(t);
+document.getElementById('subtitle').textContent=V.meta.subtitle;
+document.getElementById('daterange').textContent=V.meta.dateRange;
+document.getElementById('blurb').textContent=V.meta.blurb;
+const statsEl=document.getElementById('stats');
+V.meta.stats.forEach(function(st){
+  const d=el('div','stat');
+  const v=el('div','v'+(/[~,]/.test(st.value)?' mono':'')); v.textContent=st.value; d.append(v);
+  d.append(el('div','l', st.label));
+  if(st.sub) d.append(el('div','s', st.sub));
+  statsEl.append(d);
+});
+const legendEl=document.getElementById('legend');
+const r1=el('div','legend-row'); r1.append(el('div','legend-label','Stops by year'));
+[['1940','1940'],['1941','1941'],['1942','1942'],['1944','1944']].forEach(function(p){
+  const g=el('span','lg'); const dot=el('span','dot'); dot.style.background=C.years[p[0]]; g.append(dot); g.append(el('span',null,p[1])); r1.append(g);
+});
+const wlg=el('span','lg'); wlg.append(el('span','fl','\u2744')); wlg.append(el('span',null,'Winter')); r1.append(wlg);
+legendEl.append(r1);
+const r2=el('div','legend-row'); r2.append(el('div','legend-label','Route'));
+const o1=el('span','lg'); o1.append(el('span','ln')); o1.append(el('span',null,'1940\u201342 out')); r2.append(o1);
+const o2=el('span','lg'); const ln2=el('span','ln'); ln2.classList.add('v2'); o2.append(ln2); o2.append(el('span',null,'1944 back')); r2.append(o2);
+legendEl.append(r2);
+
+const ESRI='https://services.arcgisonline.com/ArcGIS/rest/services/';
+function esriTiles(path){ return [ESRI+path+'/MapServer/tile/{z}/{y}/{x}']; }
+function lineFeature(coords){ return {type:'Feature',properties:{},geometry:{type:'LineString',coordinates:coords}}; }
+function multiLine(arrs){ return {type:'Feature',properties:{},geometry:{type:'MultiLineString',coordinates:arrs}}; }
+const emptyFC={type:'FeatureCollection',features:[]};
+const sources={
+  'ocean-base':{type:'raster',tiles:esriTiles('Ocean/World_Ocean_Base'),tileSize:256,maxzoom:13,attribution:'Ocean basemap &copy; Esri'},
+  'ocean-ref':{type:'raster',tiles:esriTiles('Ocean/World_Ocean_Reference'),tileSize:256,maxzoom:13},
+  'sat':{type:'raster',tiles:esriTiles('World_Imagery'),tileSize:256,maxzoom:18,attribution:'Imagery &copy; Esri'},
+  'topo':{type:'raster',tiles:esriTiles('World_Topo_Map'),tileSize:256,maxzoom:18,attribution:'Topo &copy; Esri'},
+  'carto-light':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png','https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png','https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'],tileSize:256,maxzoom:18,attribution:'&copy; OpenStreetMap &copy; CARTO'},
+  'carto-dark':{type:'raster',tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png','https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],tileSize:256,maxzoom:18,attribution:'&copy; OpenStreetMap &copy; CARTO'},
+  'labels':{type:'raster',tiles:esriTiles('Reference/World_Boundaries_and_Places'),tileSize:256,maxzoom:16},
+  'dem':{type:'raster-dem',tiles:['https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:13,attribution:'Terrain: Mapzen / AWS Terrain Tiles'},
+  'v1-line':{type:'geojson',data:lineFeature(V.voyages[0].lineCoords)},
+  'v2-line':{type:'geojson',data:lineFeature(V.voyages[1].lineCoords)},
+  'v1-trail':{type:'geojson',data:emptyFC},'v2-trail':{type:'geojson',data:emptyFC},
+  'fam-onward':{type:'geojson',data:emptyFC},'fam-side':{type:'geojson',data:emptyFC},
+  'fam-full-st_roch':{type:'geojson',data:emptyFC},'fam-full-st_roch_1945':{type:'geojson',data:emptyFC},
+  'fam-full-nascopie':{type:'geojson',data:emptyFC},'fam-full-sled':{type:'geojson',data:emptyFC},
+  'fam-trail-st_roch':{type:'geojson',data:emptyFC},'fam-trail-st_roch_1945':{type:'geojson',data:emptyFC},
+  'fam-trail-nascopie':{type:'geojson',data:emptyFC},'fam-trail-sled':{type:'geojson',data:emptyFC}
+};
+const hidden={visibility:'none'};
+const lineLayout={'line-join':'round','line-cap':'round'};
+const FC = FAM ? FAM.colors : {st_roch:'#ff5ea8',st_roch_1945:'#c23a7a',nascopie:'#2bb3a3',sled:'#8b6cff'};
+function famLineLayer(id, src, color, dashed, weight){
+  const paint={'line-color':color,'line-width':weight||4,'line-opacity':.96};
+  if(dashed) paint['line-dasharray']=[2,2.3];
+  return {id:id,type:'line',source:src,layout:Object.assign({visibility:'none'},lineLayout),paint:paint};
+}
+const layers=[
+  {id:'ocean-base',type:'raster',source:'ocean-base'},
+  {id:'ocean-ref',type:'raster',source:'ocean-ref'},
+  {id:'sat',type:'raster',source:'sat',layout:hidden},
+  {id:'topo',type:'raster',source:'topo',layout:hidden},
+  {id:'carto-light',type:'raster',source:'carto-light',layout:hidden},
+  {id:'carto-dark',type:'raster',source:'carto-dark',layout:hidden},
+  {id:'labels',type:'raster',source:'labels',layout:hidden,paint:{'raster-opacity':.85}},
+  {id:'v1-casing',type:'line',source:'v1-line',layout:lineLayout,paint:{'line-color':C.routeCasing,'line-width':6,'line-opacity':.7}},
+  {id:'v1-core',type:'line',source:'v1-line',layout:lineLayout,paint:{'line-color':C.routeV1,'line-width':2.8,'line-opacity':.95}},
+  {id:'v2-casing',type:'line',source:'v2-line',layout:lineLayout,paint:{'line-color':C.routeCasing,'line-width':6,'line-opacity':.7}},
+  {id:'v2-core',type:'line',source:'v2-line',layout:lineLayout,paint:{'line-color':C.routeV2,'line-width':2.8,'line-opacity':.95}},
+  {id:'v1-trail-casing',type:'line',source:'v1-trail',layout:lineLayout,paint:{'line-color':C.routeCasing,'line-width':6,'line-opacity':.7}},
+  {id:'v1-trail-core',type:'line',source:'v1-trail',layout:lineLayout,paint:{'line-color':C.routeV1,'line-width':2.8,'line-opacity':.98}},
+  {id:'v2-trail-casing',type:'line',source:'v2-trail',layout:lineLayout,paint:{'line-color':C.routeCasing,'line-width':6,'line-opacity':.7}},
+  {id:'v2-trail-core',type:'line',source:'v2-trail',layout:lineLayout,paint:{'line-color':C.routeV2,'line-width':2.8,'line-opacity':.98}},
+  {id:'fam-onward',type:'line',source:'fam-onward',layout:Object.assign({visibility:'none'},lineLayout),paint:{'line-color':'#8298a5','line-width':2,'line-opacity':.34,'line-dasharray':[2,4]}},
+  {id:'fam-side',type:'line',source:'fam-side',layout:Object.assign({visibility:'none'},lineLayout),paint:{'line-color':FC.sled,'line-width':2.2,'line-opacity':.7,'line-dasharray':[1.5,3]}},
+  famLineLayer('fam-full-st_roch','fam-full-st_roch',FC.st_roch,false,4),
+  famLineLayer('fam-full-st_roch_1945','fam-full-st_roch_1945',FC.st_roch_1945,false,4),
+  famLineLayer('fam-full-nascopie','fam-full-nascopie',FC.nascopie,false,4),
+  famLineLayer('fam-full-sled','fam-full-sled',FC.sled,true,3.6),
+  famLineLayer('fam-trail-st_roch','fam-trail-st_roch',FC.st_roch,false,4),
+  famLineLayer('fam-trail-st_roch_1945','fam-trail-st_roch_1945',FC.st_roch_1945,false,4),
+  famLineLayer('fam-trail-nascopie','fam-trail-nascopie',FC.nascopie,false,4),
+  famLineLayer('fam-trail-sled','fam-trail-sled',FC.sled,true,3.6)
+];
+const map=new maplibregl.Map({
+  container:'map',
+  style:{version:8, projection:{type:'globe'}, sources:sources, layers:layers},
+  center:[-96,72], zoom:2.4, attributionControl:false, maxPitch:75
+});
+map.addControl(new maplibregl.AttributionControl({compact:true}), 'bottom-right');
+map.addControl(new maplibregl.NavigationControl({visualizePitch:true}), 'bottom-right');
+map.addControl(new maplibregl.ScaleControl({maxWidth:120, unit:'metric'}), 'bottom-left');
+map.on('error', function(){ });
+let userInteracting=false;
+['dragstart','zoomstart','rotatestart','pitchstart'].forEach(function(ev){ map.on(ev,function(){ userInteracting=true; }); });
+['dragend','zoomend','rotateend','pitchend'].forEach(function(ev){ map.on(ev,function(){ userInteracting=false; }); });
+function setSrc(id, data){ const s=map.getSource(id); if(s) s.setData(data); }
+function setVis(ids, on){ ids.forEach(function(id){ if(map.getLayer(id)) map.setLayoutProperty(id,'visibility', on?'visible':'none'); }); }
+
+/* ---------- STOPS + markers ---------- */
+const STOPS=[], markerEls=[], markerObjs=[], itemEls=[];
+let popup=null;
+function makePopup(s,voy){
+  const w=el('div','pop');
+  const eb=el('div','pop-eb');
+  eb.append(el('span',null,'Voyage '+voy.code+' \u00b7 Stop '+s.n));
+  const dot=el('span','pop-dot'); dot.style.background=colorForStop(s); eb.append(dot);
+  eb.append(el('span','pop-phase', s.winterLabel ? s.winterLabel : s.year));
+  w.append(eb);
+  w.append(el('h3','pop-place', s.place));
+  const meta=el('div','pop-meta');
+  meta.append(el('span','pop-date', s.dateLabel));
+  meta.append(el('span','pop-coord', fmtCoord(s.lat,s.lng)));
+  w.append(meta);
+  const d=el('div','pop-desc'+((s.desc&&s.desc.length)?'':' pop-muted'));
+  if(s.desc&&s.desc.length){ s.desc.forEach(function(p){ d.append(el('p',null,p)); }); }
+  else d.append(el('p',null,'Logged position on the voyage.'));
+  w.append(d);
+  return w;
+}
+function openPopupFor(gi){
+  if(popup) popup.remove();
+  const s=STOPS[gi];
+  popup=new maplibregl.Popup({offset:18, className:'voyage-popup', maxWidth:'320px'}).setLngLat([s.lng,s.lat]).setDOMContent(makePopup(s,V.voyages[s._vi])).addTo(map);
+}
+function setMarkerOn(i,on){ const mk=markerObjs[i]; if(!mk||mk._on===on) return; mk._on=on; if(on) mk.addTo(map); else mk.remove(); }
+V.voyages.forEach(function(voy,vi){
+  voy.stops.forEach(function(s){
+    s._vi=vi; const gi=STOPS.length; s._gi=gi; STOPS.push(s);
+    const isW=s.year==='winter';
+    const e=document.createElement('div'); e.className='stop-div';
+    e.innerHTML='<div class="stop-marker'+(isW?' winter':'')+'" style="background:'+colorForStop(s)+'">'+(isW?'<span class="flake">\u2744</span>':'')+'<span class="num">'+s.n+'</span></div>';
+    e.addEventListener('click', function(ev){ ev.stopPropagation(); if(familyMode) return; selectStop(gi,{fly:false,openPopup:true}); });
+    const mk=new maplibregl.Marker({element:e, anchor:'center'}).setLngLat([s.lng,s.lat]).addTo(map);
+    mk._on=true; markerEls[gi]=e; markerObjs[gi]=mk;
+  });
+});
+STOPS.forEach(function(s){ s.dateMs = Date.parse(s.date+'T00:00:00Z'); });
+const routeBounds=new maplibregl.LngLatBounds();
+V.voyages.forEach(function(voy){ voy.lineCoords.forEach(function(c){ routeBounds.extend(c); }); });
+function fitRoute(opt){ map.fitBounds(routeBounds, Object.assign({padding:{top:60,right:60,bottom:90,left:60}, maxZoom:5}, opt||{})); }
+
+const timelineEl=document.getElementById('timeline');
+V.voyages.forEach(function(voy,vi){
+  const vh=el('div','voyage-head'+(vi===0?' first':''));
+  vh.append(el('div','voyage-code','Voyage '+voy.code));
+  vh.append(el('div','voyage-title', voy.title));
+  vh.append(el('div','voyage-sub', voy.sub));
+  timelineEl.append(vh);
+  voy.groups.forEach(function(g){
+    const wrap=el('div','group');
+    const head=el('div','group-head');
+    head.append(el('div','group-title', g.title));
+    head.append(el('div','group-sub', g.sub));
+    wrap.append(head);
+    const items=el('div','group-items');
+    voy.stops.forEach(function(s){
+      if(s.group!==g.id) return;
+      const gi=s._gi, isW=s.year==='winter';
+      const b=el('button','stop-item'); b.type='button';
+      const chip=el('span','chip'+(isW?' winter':'')); chip.style.background=colorForStop(s);
+      chip.append(el('span','chip-num', String(s.n)));
+      if(isW) chip.append(el('span','chip-flake','\u2744'));
+      b.append(chip);
+      const tx=el('span','stop-tx');
+      tx.append(el('span','stop-place', s.place));
+      tx.append(el('span','stop-date', s.dateLabel + (s.winterLabel?'  \u00b7  '+s.winterLabel:'')));
+      b.append(tx);
+      b.addEventListener('click',function(){ selectStop(gi,{fly:true,openPopup:true}); });
+      items.append(b); itemEls[gi]=b;
+    });
+    wrap.append(items); timelineEl.append(wrap);
+  });
+});
+
+const readoutEl=document.getElementById('readout');
+const roDate=document.getElementById('ro-date');
+const roStatus=document.getElementById('ro-status');
+function setReadout(big,small){ roDate.textContent=big; roStatus.textContent=small; readoutEl.classList.add('show'); }
+setReadout('1940 \u2013 1946','Select a stop, or fly both voyages');
+const logcard=document.getElementById('logcard');
+function flashCard(){ logcard.classList.add('show'); if(!reduceMotion){ logcard.classList.remove('flash'); void logcard.offsetWidth; logcard.classList.add('flash'); } }
+function showLogCard(s){
+  const voy=V.voyages[s._vi];
+  document.getElementById('lc-dot').style.background=colorForStop(s);
+  document.getElementById('lc-eb-text').textContent='Voyage '+voy.code+'  \u00b7  Stop '+s.n+'  \u00b7  '+(s.winterLabel?s.winterLabel:s.year);
+  document.getElementById('lc-place').textContent=s.place;
+  document.getElementById('lc-date').textContent=s.dateLabel;
+  document.getElementById('lc-coord').textContent=fmtCoord(s.lat,s.lng);
+  const d=document.getElementById('lc-desc'); d.innerHTML='';
+  if(s.desc&&s.desc.length){ s.desc.forEach(function(p){ d.append(el('p',null,p)); }); }
+  else d.append(el('p','lc-muted','Logged position on the voyage.'));
+  d.scrollTop=0; flashCard();
+}
+function showTransitionCard(){
+  document.getElementById('lc-dot').style.background=C.routeV2;
+  document.getElementById('lc-eb-text').textContent='Between the voyages';
+  document.getElementById('lc-place').textContent='Two years at Halifax';
+  document.getElementById('lc-date').textContent='1942 \u2013 1944';
+  document.getElementById('lc-coord').textContent='';
+  const d=document.getElementById('lc-desc'); d.innerHTML='';
+  d.append(el('p',null,'After reaching Halifax in October 1942, the St. Roch served on the east coast before setting out again in July 1944 \u2014 this time racing home to Vancouver through the deeper northern channels in a single season.'));
+  d.scrollTop=0; flashCard();
+}
+function hideLogCard(){ logcard.classList.remove('show'); }
+document.getElementById('logcardClose').addEventListener('click', hideLogCard);
+(function(){
+  let drag=null;
+  logcard.addEventListener('pointerdown', function(e){
+    if(e.target.closest('.lc-desc') || e.target.closest('.logcard-close')) return;
+    const wrap=document.querySelector('.map-wrap').getBoundingClientRect();
+    const r=logcard.getBoundingClientRect();
+    drag={dx:e.clientX-r.left, dy:e.clientY-r.top};
+    logcard.style.right='auto'; logcard.style.bottom='auto';
+    logcard.style.left=(r.left-wrap.left)+'px'; logcard.style.top=(r.top-wrap.top)+'px';
+    logcard.classList.add('dragging');
+    try{ logcard.setPointerCapture(e.pointerId); }catch(_){}
+    e.preventDefault();
+  });
+  logcard.addEventListener('pointermove', function(e){
+    if(!drag) return;
+    const wrap=document.querySelector('.map-wrap').getBoundingClientRect();
+    let x=e.clientX-drag.dx-wrap.left, y=e.clientY-drag.dy-wrap.top;
+    x=Math.max(6, Math.min(x, wrap.width-logcard.offsetWidth-6));
+    y=Math.max(6, Math.min(y, wrap.height-logcard.offsetHeight-6));
+    logcard.style.left=x+'px'; logcard.style.top=y+'px';
+  });
+  function endDrag(e){ if(!drag) return; drag=null; logcard.classList.remove('dragging'); try{ logcard.releasePointerCapture(e.pointerId); }catch(_){} }
+  logcard.addEventListener('pointerup', endDrag);
+  logcard.addEventListener('pointercancel', endDrag);
+})();
+
+function hideAllMarkers(){ for(let i=0;i<markerObjs.length;i++) setMarkerOn(i,false); }
+function showAllMarkers(){ for(let i=0;i<markerObjs.length;i++) setMarkerOn(i,true); }
+function revealMarker(gi){
+  setMarkerOn(gi,true);
+  if(reduceMotion) return;
+  const e=markerEls[gi]; if(!e) return;
+  const inner=e.querySelector('.stop-marker'); if(!inner) return;
+  inner.classList.remove('pop'); void inner.offsetWidth; inner.classList.add('pop');
+}
+let activeIdx=-1;
+function scrollItemIntoView(gi){ const b=itemEls[gi]; if(b) b.scrollIntoView({block:'nearest', behavior: reduceMotion?'auto':'smooth'}); }
+function selectStop(gi,opt){
+  opt=opt||{};
+  if(!opt.fromAnim){ if(engaged) resetPlayback(); else pause(); hideLogCard(); showAllMarkers(); }
+  activeIdx=gi;
+  itemEls.forEach(function(b,i){ if(b) b.classList.toggle('active', i===gi); });
+  markerEls.forEach(function(e,i){ if(e) e.classList.toggle('is-active', i===gi); });
+  const s=STOPS[gi];
+  if(opt.fly){ map.flyTo({center:[s.lng,s.lat], zoom:Math.max(map.getZoom(),5.2), duration: reduceMotion?0:900}); }
+  if(opt.openPopup){ openPopupFor(gi); }
+  setReadout(s.dateLabel, s.winterLabel ? 'Frozen in \u00b7 '+s.winterLabel : 'Anchored \u00b7 '+s.place);
+  scrollItemIntoView(gi);
+  if(window.innerWidth<=820){ closeNav(); }
+}
+
+const SHIP_SVG='<svg viewBox="0 0 24 24" width="24" height="24"><path d="M12 2 L19 20 L12 16 L5 20 Z" fill="'+C.routeV1+'" stroke="#0b1c25" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+function hav(a,b){ const R=6371,dLat=(b[0]-a[0])*Math.PI/180,dLon=(b[1]-a[1])*Math.PI/180,la1=a[0]*Math.PI/180,la2=b[0]*Math.PI/180; const h=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dLon/2)*Math.sin(dLon/2); return 2*R*Math.asin(Math.sqrt(h)); }
+function bearing(a,b){ const dLon=(b[1]-a[1])*Math.PI/180,la1=a[0]*Math.PI/180,la2=b[0]*Math.PI/180; const y=Math.sin(dLon)*Math.cos(la2), x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dLon); return (Math.atan2(y,x)*180/Math.PI+360)%360; }
+const legSeq=[];
+V.voyages.forEach(function(voy,vi){
+  if(vi>0){ const prev=V.voyages[vi-1]; const a=prev.stops[prev.stops.length-1], b=voy.stops[0]; legSeq.push({pts:[[a.lat,a.lng],[b.lat,b.lng]], vi:vi, isTransition:true}); }
+  voy.legs.forEach(function(p){ legSeq.push({pts:p, vi:vi, isTransition:false}); });
+});
+const TOTAL_MS=78000, MINL=420, MAXL=5000, WINTER_MS=2200, TRANSITION_MS=3200, FOLLOW_Z=4.5, FOLLOW_PITCH=28;
+let legMeta=[];
+function recomputeLegMeta(){
+  legMeta=legSeq.map(function(L0){
+    const pts=L0.pts, cum=[0];
+    for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+hav(pts[i-1],pts[i]));
+    return {pts:pts, cum:cum, len:cum[cum.length-1], vi:L0.vi, isTransition:L0.isTransition};
+  });
+  const tl=legMeta.reduce(function(a,l){ return a + (l.isTransition?0:l.len); }, 0);
+  legMeta.forEach(function(l){ l.dur = l.isTransition ? 0 : Math.max(MINL, Math.min(MAXL, TOTAL_MS*(l.len/(tl||1)))); });
+}
+recomputeLegMeta();
+function posOnLeg(l,t){
+  const target=t*l.len, cum=l.cum, pts=l.pts;
+  let i=1; while(i<cum.length && cum[i]<target) i++;
+  if(i>=pts.length){ const a=pts[pts.length-2],b=pts[pts.length-1]; return {ll:b,brg:bearing(a,b)}; }
+  const a=pts[i-1],b=pts[i], seg=(cum[i]-cum[i-1])||1, f=(target-cum[i-1])/seg;
+  return {ll:[a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f], brg:bearing(a,b)};
+}
+let ship=null, shipInner=null;
+function ensureShip(){
+  if(ship) return;
+  const e=document.createElement('div'); e.className='ship-div';
+  e.innerHTML='<div class="ship-inner">'+SHIP_SVG+'</div>';
+  ship=new maplibregl.Marker({element:e, anchor:'center'}).setLngLat([STOPS[0].lng,STOPS[0].lat]).addTo(map);
+  shipInner=e.querySelector('.ship-inner');
+}
+function setShipColor(col){ const p=shipInner&&shipInner.querySelector('path'); if(p) p.setAttribute('fill',col); }
+function setRouteVisible(on){ ['v1-casing','v1-core','v2-casing','v2-core'].forEach(function(id){ if(map.getLayer(id)) map.setLayoutProperty(id,'visibility', on?'visible':'none'); }); }
+function setTrail(vi, latlngArr){
+  const src=map.getSource(vi===0?'v1-trail':'v2-trail'); if(!src) return;
+  if(latlngArr.length<2){ src.setData(emptyFC); return; }
+  src.setData(lineFeature(latlngArr.map(function(p){ return [p[1],p[0]]; })));
+}
+function clearTrails(){ setTrail(0,[]); setTrail(1,[]); }
+function showFullRoute(){ clearTrails(); setRouteVisible(true); }
+
+/* ---------- seekable timeline (ship) ---------- */
+let timeline=[], totalT=0, reachTimeArr=[];
+function buildTimeline(){
+  timeline=[]; let t=0; reachTimeArr=new Array(STOPS.length).fill(0);
+  for(let i=0;i<legMeta.length;i++){
+    const lm=legMeta[i];
+    if(lm.isTransition){
+      timeline.push({type:'pause', t0:t, dur:TRANSITION_MS, kind:'transition', ll:lm.pts[0], stopIdx:i, trailLeg:i-1});
+      t+=TRANSITION_MS; if(i+1<reachTimeArr.length) reachTimeArr[i+1]=t;
+    } else {
+      timeline.push({type:'travel', t0:t, dur:lm.dur, legIndex:i, from:i, to:i+1});
+      t+=lm.dur; if(i+1<reachTimeArr.length) reachTimeArr[i+1]=t;
+      if(STOPS[i+1] && STOPS[i+1].year==='winter'){
+        timeline.push({type:'pause', t0:t, dur:WINTER_MS, kind:'winter', ll:[STOPS[i+1].lat,STOPS[i+1].lng], stopIdx:i+1, trailLeg:i});
+        t+=WINTER_MS;
+      }
+    }
+  }
+  totalT=t;
+}
+buildTimeline();
+function findSeg(t){ let lo=0,hi=timeline.length-1,res=0; while(lo<=hi){ const mid=(lo+hi)>>1; if(timeline[mid].t0<=t){ res=mid; lo=mid+1; } else hi=mid-1; } return res; }
+function stateAt(t){
+  t=Math.max(0,Math.min(t,totalT));
+  const seg=timeline[findSeg(t)];
+  if(seg.type==='travel'){
+    const local=seg.dur>0?Math.max(0,Math.min((t-seg.t0)/seg.dur,1)):1;
+    const lm=legMeta[seg.legIndex]; const p=posOnLeg(lm,local);
+    const d0=STOPS[seg.from].dateMs, d1=STOPS[seg.to].dateMs;
+    return {ll:p.ll, brg:p.brg, dateMs:d0+(d1-d0)*local, reached:seg.from, status:'Underway to '+STOPS[seg.to].place, vi:lm.vi, seg:seg, local:local};
+  }
+  if(seg.kind==='transition'){ return {ll:seg.ll, brg:0, dateMs:STOPS[seg.stopIdx].dateMs, reached:seg.stopIdx, status:'Two years at Halifax \u2014 then the return', vi:1, seg:seg, transition:true}; }
+  const s=STOPS[seg.stopIdx];
+  return {ll:[s.lat,s.lng], brg:0, dateMs:s.dateMs, reached:seg.stopIdx, status:'Frozen in \u00b7 '+(s.winterLabel||''), vi:s._vi, seg:seg, winter:true};
+}
+function paintTrail(seg, local, curll){
+  let legIndex, lc;
+  if(seg.type==='travel'){ legIndex=seg.legIndex; lc=local; } else { legIndex=seg.trailLeg; lc=1; }
+  const byV=[[],[]];
+  for(let k=0;k<legIndex;k++){ const lm=legMeta[k]; if(lm.isTransition) continue; const arr=byV[lm.vi]; for(let q=0;q<lm.pts.length;q++) arr.push(lm.pts[q]); }
+  if(legIndex>=0){ const cur=legMeta[legIndex]; if(cur && !cur.isTransition){ const arr=byV[cur.vi], target=lc*cur.len; arr.push(cur.pts[0]); let i=1; while(i<cur.cum.length && cur.cum[i]<target){ arr.push(cur.pts[i]); i++; } arr.push(curll); } }
+  setTrail(0, byV[0]); setTrail(1, byV[1]);
+}
+let lastReached=-1, lastCardKey='';
+function updateReached(idx){
+  if(idx===lastReached) return; lastReached=idx; activeIdx=idx;
+  for(let i=0;i<markerObjs.length;i++){ setMarkerOn(i, i<=idx); }
+  revealMarker(idx);
+  itemEls.forEach(function(b,i){ if(!b) return; b.classList.toggle('active', i===idx); b.classList.toggle('reached', i<=idx); });
+  markerEls.forEach(function(e,i){ if(e) e.classList.toggle('is-active', i===idx); });
+  scrollItemIntoView(idx);
+}
+function updateCard(st){
+  const key=st.transition?'transition':('s'+st.reached);
+  if(key===lastCardKey) return; lastCardKey=key;
+  if(st.transition) showTransitionCard(); else showLogCard(STOPS[st.reached]);
+}
+
+/* ---------- ship playback ---------- */
+let playing=false, engaged=false, raf=null, curT=0, lastTs=0, scrubbing=false, camIntro=false, speedMul=1;
+const flyBtn=document.getElementById('flyBtn');
+const flyLabel=flyBtn.querySelector('.fly-label');
+const resetBtn=document.getElementById('resetBtn');
+const tPlay=document.getElementById('tPlay'), tPrev=document.getElementById('tPrev'), tNext=document.getElementById('tNext'), tScrub=document.getElementById('tScrub'), tTime=document.getElementById('tTime');
+function setPlayUI(p){
+  if(tPlay){ tPlay.innerHTML = p?'\u23f8':'\u25b6'; tPlay.title=p?'Pause':'Play'; }
+  flyBtn.classList.toggle('playing', p);
+  flyLabel.textContent = p ? 'Pause the voyages' : (curT>=totalT-1 ? 'Replay the voyages' : (curT>0?'Resume the voyages':'St.\u00a0Roch Northwest voyages'));
+}
+function engage(){
+  if(engaged) return; engaged=true;
+  document.body.classList.add('armed');
+  ensureShip();
+  setRouteVisible(false); clearTrails();
+  hideAllMarkers();
+  lastReached=-1; lastCardKey='';
+  if(window.innerWidth<=820) closeNav();
+}
+function disengage(){
+  engaged=false; playing=false; camIntro=false; if(raf) cancelAnimationFrame(raf); raf=null;
+  document.body.classList.remove('armed');
+  showFullRoute();
+  if(ship){ ship.remove(); ship=null; shipInner=null; }
+  curT=0; lastReached=-1; lastCardKey='';
+  applyMarkerFilter(); hideLogCard();
+  if(tScrub) tScrub.value=0; if(tTime) tTime.textContent='1940';
+  setPlayUI(false);
+  if(!reduceMotion){ map.easeTo({pitch:0, duration:500}); }
+  fitRoute();
+}
+function resetPlayback(){ disengage(); }
+function renderFrame(t){
+  const st=stateAt(t);
+  ensureShip(); setShipColor(st.vi===0?C.routeV1:C.routeV2);
+  ship.setLngLat(LL(st.ll));
+  if(shipInner && !st.winter && !st.transition) shipInner.style.transform='rotate('+st.brg+'deg)';
+  paintTrail(st.seg, st.local||0, st.ll);
+  if(!reduceMotion && engaged && !camIntro && !userInteracting) map.setCenter(LL(st.ll));
+  updateReached(st.reached); updateCard(st);
+  if(st.transition){ setReadout('1942 \u2192 1944', st.status); } else { setReadout(fmtDate(st.dateMs), st.status); }
+  if(tTime) tTime.textContent = st.transition ? '1942\u20131944' : fmtDate(st.dateMs);
+  if(tScrub && !scrubbing) tScrub.value = Math.round((t/(totalT||1))*1000);
+}
+function tick(ts){
+  if(!playing) return;
+  if(!lastTs) lastTs=ts;
+  const dt=(ts-lastTs)*speedMul; lastTs=ts;
+  curT+=dt;
+  if(curT>=totalT){ curT=totalT; renderFrame(curT); pause(); return; }
+  renderFrame(curT);
+  raf=requestAnimationFrame(tick);
+}
+function play(){
+  const fresh = curT>=totalT || curT===0;
+  if(curT>=totalT) curT=0;
+  engage();
+  playing=true; lastTs=0; setPlayUI(true);
+  renderFrame(curT);
+  if(fresh){
+    const c=LL([STOPS[0].lat,STOPS[0].lng]);
+    if(reduceMotion){ map.jumpTo({center:c, zoom:FOLLOW_Z}); raf=requestAnimationFrame(tick); }
+    else { camIntro=true; map.easeTo({center:c, zoom:FOLLOW_Z, pitch:FOLLOW_PITCH, bearing:0, duration:760}); setTimeout(function(){ camIntro=false; lastTs=0; if(playing) raf=requestAnimationFrame(tick); }, 800); }
+  } else { raf=requestAnimationFrame(tick); }
+}
+function pause(){ playing=false; if(raf) cancelAnimationFrame(raf); raf=null; setPlayUI(false); }
+function togglePlay(){ if(playing) pause(); else play(); }
+function seekTo(t){ engage(); camIntro=false; curT=Math.max(0,Math.min(t,totalT)); renderFrame(curT); if(playing) lastTs=0; }
+function stepStop(dir){ const r=Math.max(0,stateAt(curT).reached); const target=Math.max(0,Math.min(STOPS.length-1, r+dir)); seekTo(reachTimeArr[target]+0.001); }
+flyBtn.addEventListener('click', function(){ if(familyMode) return; togglePlay(); });
+resetBtn.addEventListener('click', resetPlayback);
+if(tPlay) tPlay.addEventListener('click', togglePlay);
+if(tPrev) tPrev.addEventListener('click', function(){ stepStop(-1); });
+if(tNext) tNext.addEventListener('click', function(){ stepStop(1); });
+if(tScrub){
+  tScrub.addEventListener('input', function(){ scrubbing=true; seekTo((parseInt(tScrub.value,10)/1000)*totalT); });
+  tScrub.addEventListener('change', function(){ scrubbing=false; if(playing) lastTs=0; });
+  tScrub.addEventListener('pointerup', function(){ scrubbing=false; });
+}
+setPlayUI(false);
+
+/* ---------- replay speed ---------- */
+const speedSlider=document.getElementById('speedSlider');
+const speedVal=document.getElementById('speedVal');
+function setSpeedLabel(){ let s=speedMul.toFixed(2).replace(/0+$/,'').replace(/\.$/,''); speedVal.textContent=s+'\u00d7'; }
+speedSlider.addEventListener('input',function(){ speedMul=parseFloat(speedSlider.value)||1; setSpeedLabel(); });
+setSpeedLabel();
+
+/* ---------- year multi-toggle ---------- */
+const YRS=['1940','1941','1942','1944'];
+let yearOn={'1940':true,'1941':true,'1942':true,'1944':true};
+const voyageYears=V.voyages.map(function(_,vi){ const set={}; STOPS.forEach(function(s){ if(s._vi===vi) set[s.year]=true; }); return set; });
+function syncYearChips(){ const btns=document.querySelectorAll('.yfbtn'); const allOn=YRS.every(function(y){return yearOn[y];}); btns.forEach(function(b){ const y=b.getAttribute('data-year'); b.classList.toggle('on', y==='all'?allOn:!!yearOn[y]); }); }
+function applyMarkerFilter(){
+  if(engaged) return;
+  markerObjs.forEach(function(m,i){ const s=STOPS[i]; const show = s.year==='winter' ? YRS.some(function(y){return yearOn[y];}) : !!yearOn[s.year]; setMarkerOn(i, show); });
+  if(map.getLayer('v1-core')){ const a0=YRS.some(function(y){return voyageYears[0][y]&&yearOn[y];}); map.setPaintProperty('v1-core','line-opacity', a0?0.95:0); map.setPaintProperty('v1-casing','line-opacity', a0?0.7:0); }
+  if(map.getLayer('v2-core')){ const a1=YRS.some(function(y){return voyageYears[1][y]&&yearOn[y];}); map.setPaintProperty('v2-core','line-opacity', a1?0.95:0); map.setPaintProperty('v2-casing','line-opacity', a1?0.7:0); }
+  syncYearChips();
+}
+(function(){
+  const btns=document.querySelectorAll('.yfbtn');
+  btns.forEach(function(btn){
+    const y=btn.getAttribute('data-year');
+    if(y!=='all' && C.years[y]) btn.style.color=C.years[y];
+    btn.addEventListener('click', function(){
+      if(familyMode) return;
+      resetPlayback();
+      if(y==='all'){ const allOn=YRS.every(function(yy){return yearOn[yy];}); const v=!allOn; YRS.forEach(function(yy){ yearOn[yy]=v; }); }
+      else { yearOn[y]=!yearOn[y]; }
+      applyMarkerFilter();
+    });
+  });
+})();
+
+/* ---------- layers panel ---------- */
+const layersBtn=document.getElementById('layersBtn');
+const layersPanel=document.getElementById('layersPanel');
+function toggleLayers(force){ const show = (force!=null)? force : !layersPanel.classList.contains('show'); layersPanel.classList.toggle('show', show); }
+layersBtn.addEventListener('click', function(e){ e.stopPropagation(); toggleLayers(); });
+document.addEventListener('click', function(e){ if(!layersPanel.contains(e.target) && e.target!==layersBtn && !layersBtn.contains(e.target)) toggleLayers(false); });
+const BASE_LAYERS={ ocean:['ocean-base','ocean-ref'], sat:['sat'], topo:['topo'], light:['carto-light'], dark:['carto-dark'] };
+function setBase(key){ Object.keys(BASE_LAYERS).forEach(function(k){ BASE_LAYERS[k].forEach(function(id){ if(map.getLayer(id)) map.setLayoutProperty(id,'visibility', k===key?'visible':'none'); }); }); }
+document.querySelectorAll('input[name="base"]').forEach(function(r){ r.addEventListener('change', function(){ if(r.checked) setBase(r.value); }); });
+document.getElementById('optLabels').addEventListener('change', function(e){ if(map.getLayer('labels')) map.setLayoutProperty('labels','visibility', e.target.checked?'visible':'none'); });
+let terrainOn=false;
+document.getElementById('optTerrain').addEventListener('change', function(e){ terrainOn=e.target.checked; try{ map.setTerrain(terrainOn ? {source:'dem', exaggeration:1.35} : null); }catch(_){} });
+
+/* ---------- fullscreen ---------- */
+const mapWrap=document.querySelector('.map-wrap');
+const fsBtn=document.getElementById('fsBtn');
+const ICON_EXPAND='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+const ICON_COMPRESS='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>';
+fsBtn.innerHTML=ICON_EXPAND;
+function inFS(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+function toggleFS(){ if(!inFS()){ const r=mapWrap.requestFullscreen||mapWrap.webkitRequestFullscreen; if(r) r.call(mapWrap); } else { const x=document.exitFullscreen||document.webkitExitFullscreen; if(x) x.call(document); } }
+function onFSchange(){ const f=!!inFS(); fsBtn.classList.toggle('on', f); fsBtn.innerHTML = f?ICON_COMPRESS:ICON_EXPAND; fsBtn.title=f?'Exit fullscreen':'Fullscreen'; setTimeout(function(){ map.resize(); }, 60); }
+fsBtn.addEventListener('click', toggleFS);
+document.addEventListener('fullscreenchange', onFSchange);
+document.addEventListener('webkitfullscreenchange', onFSchange);
+
+/* ---------- nav + modals ---------- */
+if(window.matchMedia('(max-width:820px)').matches) document.body.classList.add('has-menu');
+const scrim=document.getElementById('scrim'), modal=document.getElementById('modal');
+function openNav(){ document.body.classList.add('nav-open'); scrim.classList.add('show'); }
+function closeNav(){ document.body.classList.remove('nav-open'); if(!modal.classList.contains('show')) scrim.classList.remove('show'); }
+document.getElementById('menuBtn').addEventListener('click', openNav);
+function openModal(){
+  document.getElementById('modalTitle').textContent='About this map';
+  document.getElementById('modalSub').textContent=V.meta.ship+'  \u00b7  '+V.meta.dateRange;
+  const body=document.getElementById('modalBody'); body.innerHTML='';
+  V.meta.note.forEach(function(p){ body.append(el('p',null,p)); });
+  scrim.classList.add('show'); modal.classList.add('show');
+}
+function closeModal(){ scrim.classList.remove('show'); modal.classList.remove('show'); }
+document.getElementById('aboutLink').addEventListener('click', openModal);
+function openFamilyStory(){
+  document.getElementById('modalTitle').textContent='The Panikpakuttuk family';
+  document.getElementById('modalSub').textContent='Aboard the St. Roch in 1944 \u00b7 home in 1946';
+  const body=document.getElementById('modalBody'); body.innerHTML='';
+  const blocks=[
+    {h:'Who they were'},
+    {p:'In August 1944 the RCMP schooner St. Roch hired eight Inuit from Mittimatalik (Pond Inlet) for its record crossing of the Northwest Passage: Joe Panikpakuttuk, his mother Panikpak, his wife Ajaqquti, his stepson Arreak, three children and a young niece. They came aboard with ~17 dogs and a tent on the cargo hatch \u2014 hired only for rations, and recorded as \u201csecond class citizens.\u201d'},
+    {h:'What they gave'},
+    {p:'Joe\u2019s walrus hunts fed a ship whose canned food had failed. When fog left the captain lost at Prince of Wales Strait, the elder Panikpak read the coast against the chart and found the ship\u2019s position \u2014 \u201cdespite the disbelief of the crew.\u201d Their knowledge helped make the 1944 crossing possible.'},
+    {h:'Left behind'},
+    {p:'On 17 September 1944 the ship put the family ashore at deserted Herschel Island and sailed on to Vancouver to claim the record. They were never told how long they\u2019d be gone. \u201cHe left and we were alone there,\u201d Joe said. They wintered alone, hunting to survive.'},
+    {h:'Carried the wrong way'},
+    {p:'The St. Roch\u2019s 1945 Arctic patrol picked them up on 11 August 1945 \u2014 then ran east, not home, to a second winter at Cambridge Bay. That December the Polar Medal was recommended for the crew that had left Joe off its list, while his family wintered a few yards away.'},
+    {h:'The long way home, 1946'},
+    {p:'They finally went home by dog sled from Cambridge Bay on 22 April 1946, guided by Inuit, through storms, two days without food, Joe gravely ill, and a polar bear in camp. From Fort Ross the HBC ship Nascopie carried them the last stretch.'},
+    {h:'Home, two years later'},
+    {p:'They reached Pond Inlet in September 1946 \u2014 more than two years out of an \u201c86-day\u201d voyage. Their community had assumed them dead. Joe Panikpakuttuk is still the only Inuk ever awarded the Polar Medal \u2014 granted in 1974, after his death.'},
+    {p:'This is a draft. All Inuit content is under the authority of the project\u2019s Inuit consultants and is not cleared for public use; quotations must be verified and attributed first.'}
+  ];
+  blocks.forEach(function(b){ if(b.h) body.append(el('h3','fs-h',b.h)); if(b.p) body.append(el('p',null,b.p)); });
+  scrim.classList.add('show'); modal.classList.add('show');
+}
+(function(){ const b=document.getElementById('famStoryBtn'); if(b) b.addEventListener('click', openFamilyStory); })();
+document.getElementById('modalClose').addEventListener('click', closeModal);
+scrim.addEventListener('click',function(){ closeModal(); closeNav(); });
+
+/* ---------- welcome ---------- */
+const welcomeEl=document.getElementById('welcome'), welcomeScrim=document.getElementById('welcomeScrim');
+function openWelcome(){ if(welcomeEl){ welcomeEl.classList.add('show'); if(welcomeScrim) welcomeScrim.classList.add('show'); } }
+function closeWelcome(){ if(welcomeEl){ welcomeEl.classList.remove('show'); if(welcomeScrim) welcomeScrim.classList.remove('show'); } }
+document.getElementById('infoBtn').addEventListener('click', openWelcome);
+['welcomeClose','welcomeStart'].forEach(function(id){ const b=document.getElementById(id); if(b) b.addEventListener('click', closeWelcome); });
+if(welcomeScrim) welcomeScrim.addEventListener('click', closeWelcome);
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'){ closeModal(); closeNav(); closeWelcome(); toggleLayers(false); } });
+
+/* ============================================================ */
+/* ===============  PANIKPAKUTTUK FAMILY MODE  ================ */
+/* ============================================================ */
+const FAM_KEYS=['st_roch','st_roch_1945','nascopie','sled'];
+const FAM_FULL_LAYERS=['fam-full-st_roch','fam-full-st_roch_1945','fam-full-nascopie','fam-full-sled'];
+const FAM_TRAIL_LAYERS=['fam-trail-st_roch','fam-trail-st_roch_1945','fam-trail-nascopie','fam-trail-sled'];
+const famBtn=document.getElementById('famBtn');
+const famPlayBtn=document.getElementById('famPlay'), famPrevBtn=document.getElementById('famPrev'), famNextBtn=document.getElementById('famNext');
+const famScrub=document.getElementById('famScrub'), famTime=document.getElementById('famTime');
+const famRouteBtn=document.getElementById('famRouteBtn');
+let familyMode=false, famEngaged=false, famBuilt=false, famOverlayOn=false;
+let famPlaying=false, famRaf=null, famCurT=0, famLastTs=0, famScrubbing=false, famTotalT=0, famCamIntro=false;
+let famSegs=[], famStops=[], famStopMarkers=[], famSideMarker=null, famTiEls=[], famLastReached=-2, famLastCardIdx=-2, famShipKey=null;
+let famShip=null, famShipInner=null, famShipOn=false;
+let famFilter={aboard:true, st_roch45:true, sled:true, nascopie:true, est:true};
+
+function famIso(s){ const p=s.split('-'); return Date.UTC(+p[0],(+p[1])-1,+p[2]); }
+function famDate(ms){ const d=new Date(ms); return d.getUTCDate()+' '+MONTHS[d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+function famMY(ms){ const d=new Date(ms); return MONTHS[d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+function famKeyOf(nd){ return nd.mode==='sled' ? 'sled' : (nd.vessel==='nascopie' ? 'nascopie' : 'st_roch_1945'); }
+function famColorOf(key){ return (FAM&&FAM.colors[key]) || (FAM&&FAM.colors.st_roch) || '#ff5ea8'; }
+function famCatOf(key){ return key==='st_roch'?'aboard':(key==='st_roch_1945'?'st_roch45':key); }
+function famTextColor(key){ return key==='sled' ? '#fff' : '#160d12'; }
+function famBoat(col){ return '<svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 2 L19 20 L12 16 L5 20 Z" fill="'+col+'" stroke="#160d12" stroke-width="1.5" stroke-linejoin="round"/></svg>'; }
+function famSledSvg(col){ return '<svg viewBox="0 0 26 26" width="26" height="26"><g stroke="#160d12" stroke-width="1.4" stroke-linecap="round" fill="none"><circle cx="6" cy="8" r="2" fill="'+col+'"/><circle cx="11" cy="8" r="2" fill="'+col+'"/><circle cx="16" cy="8" r="2" fill="'+col+'"/><rect x="6.5" y="14" width="13" height="3.6" rx="1.1" fill="'+col+'"/><path d="M5.5 19 h15 M9 18 v1.6 M18 18 v1.6"/></g></svg>'; }
+function famShipHTML(key){ const col=famColorOf(key); const svg=key==='sled'?famSledSvg(col):famBoat(col); return '<div class="fam-ship-inner">'+svg+'</div>'; }
+function famEnsureShip(key){
+  if(!famShip){ const e=document.createElement('div'); e.className='fam-ship-div'; e.innerHTML=famShipHTML(key); famShip=new maplibregl.Marker({element:e,anchor:'center'}).setLngLat(LL(FAM.aboard.geom[0])); famShipKey=key; famShipInner=e.querySelector('.fam-ship-inner'); }
+  if(!famShipOn){ famShip.addTo(map); famShipOn=true; }
+}
+function famRemoveShip(){ if(famShip && famShipOn){ famShip.remove(); famShipOn=false; } }
+function famSetKey(key){ if(key!==famShipKey && famShip){ famShipKey=key; const e=famShip.getElement(); e.innerHTML=famShipHTML(key); famShipInner=e.querySelector('.fam-ship-inner'); } }
+function famShowLogCard(s){
+  document.getElementById('lc-dot').style.background=famColorOf(s.key);
+  document.getElementById('lc-eb-text').textContent=(s.approx?'Estimated  \u00b7  ':'')+s.phase+(s.n?'  \u00b7  Stop '+s.n:'');
+  document.getElementById('lc-place').textContent=s.place;
+  document.getElementById('lc-date').textContent=famDate(s.dateMs);
+  document.getElementById('lc-coord').textContent=fmtCoord(s.lat,s.lng);
+  const d=document.getElementById('lc-desc'); d.innerHTML=''; d.append(el('p',null,s.note||''));
+  d.scrollTop=0; flashCard();
+}
+function famBuildTimeline(){
+  famSegs=[]; famStops=[]; if(!FAM){ famTotalT=0; return; }
+  const TRAVEL=58000, HERSCHEL=6000, CAMB=5000, OTHER=1700;
+  const phases=[]; const ab=FAM.aboard;
+  phases.push({kind:'travel',geom:ab.geom.slice(),key:'st_roch',dStart:famIso(ab.startDate),dEnd:famIso(ab.endDate),aboard:true});
+  let prev=ab.geom[ab.geom.length-1]; const home=FAM.home;
+  for(let i=0;i<home.length;i++){ const nd=home[i];
+    if(i>0){ const seg=[prev].concat((nd.via||[]),[[nd.lat,nd.lng]]); const dS=home[i-1].dwellTo?famIso(home[i-1].dwellTo):famIso(home[i-1].date); phases.push({kind:'travel',geom:seg,key:famKeyOf(nd),dStart:dS,dEnd:famIso(nd.date)}); }
+    if(nd.dwellTo){ const wk=nd.place.indexOf('Herschel')>=0?'herschel':(nd.place.indexOf('Cambridge')>=0?'camb':'other'); phases.push({kind:'dwell',pos:[nd.lat,nd.lng],key:famKeyOf(nd),dStart:famIso(nd.date),dEnd:famIso(nd.dwellTo),dwellKind:wk}); }
+    prev=[nd.lat,nd.lng];
+  }
+  let totalLen=0; phases.forEach(function(p){ if(p.kind==='travel'){ const c=[0]; for(let i=1;i<p.geom.length;i++) c.push(c[i-1]+hav(p.geom[i-1],p.geom[i])); p.cum=c; p.len=c[c.length-1]; totalLen+=p.len; } });
+  let t=0; phases.forEach(function(p){ if(p.kind==='travel') p.dur=Math.max(1500, TRAVEL*(p.len/(totalLen||1))); else p.dur=p.dwellKind==='herschel'?HERSCHEL:(p.dwellKind==='camb'?CAMB:OTHER); p.t0=t; t+=p.dur; famSegs.push(p); });
+  famTotalT=t;
+  const abSeg=famSegs[0];
+  (ab.stops||[]).forEach(function(s){ let best=1e18,bi=0; for(let i=0;i<ab.geom.length;i++){ const d=hav([s.lat,s.lng],ab.geom[i]); if(d<best){best=d;bi=i;} } const frac=abSeg.len>0?abSeg.cum[bi]/abSeg.len:0; famStops.push({t:abSeg.t0+frac*abSeg.dur,n:s.n,key:'st_roch',event:s.event,lat:s.lat,lng:s.lng,place:s.place,title:s.title,note:s.note,dateMs:famIso(s.date),phase:'Aboard the St. Roch \u00b7 1944',approx:false}); });
+  let ti=0; for(let k=0;k<famSegs.length;k++){ const p=famSegs[k]; if(p.kind==='travel'&&!p.aboard){ ti++; const node=home[ti]; if(node) famStops.push({t:p.t0+p.dur,n:node.n,key:famKeyOf(node),event:node.event,lat:node.lat,lng:node.lng,place:node.place,title:node.title,note:node.note,dateMs:famIso(node.date),phase:node.phase,approx:!!node.approx}); } }
+  famStops.sort(function(a,b){ return a.t-b.t; });
+}
+function famSegAt(t){ let res=0; for(let i=0;i<famSegs.length;i++){ if(famSegs[i].t0<=t) res=i; else break; } return res; }
+function famPosAt(seg, local){ if(seg.kind==='dwell') return {ll:seg.pos, brg:0}; const target=local*seg.len, cum=seg.cum, pts=seg.geom; let i=1; while(i<cum.length && cum[i]<target) i++; if(i>=pts.length){ const a=pts[pts.length-2]||pts[0], b=pts[pts.length-1]; return {ll:b, brg:bearing(a,b)}; } const a=pts[i-1], b=pts[i], s=(cum[i]-cum[i-1])||1, f=(target-cum[i-1])/s; return {ll:[a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f], brg:bearing(a,b)}; }
+function famStateAt(t){ t=Math.max(0,Math.min(t,famTotalT)); const si=famSegAt(t), seg=famSegs[si]; const local=seg.dur>0?Math.max(0,Math.min((t-seg.t0)/seg.dur,1)):1; const pos=famPosAt(seg, local); const dateMs=seg.dStart+(seg.dEnd-seg.dStart)*local; let reached=-1; for(let i=0;i<famStops.length;i++){ if(famStops[i].t<=t+1) reached=i; } return {ll:pos.ll, brg:pos.brg, dateMs:dateMs, key:seg.key, kind:seg.kind, dwellKind:seg.dwellKind, local:local, reached:reached}; }
+function famPaintTrail(t){
+  const acc={st_roch:[],st_roch_1945:[],nascopie:[],sled:[]};
+  for(let k=0;k<famSegs.length;k++){ const seg=famSegs[k]; if(seg.kind!=='travel') continue; const arr=acc[seg.key]; if(t>=seg.t0+seg.dur){ for(let q=0;q<seg.geom.length;q++) arr.push(seg.geom[q]); } else if(t>seg.t0){ const local=(t-seg.t0)/seg.dur, target=local*seg.len; arr.push(seg.geom[0]); let i=1; while(i<seg.cum.length && seg.cum[i]<target){ arr.push(seg.geom[i]); i++; } arr.push(famPosAt(seg,local).ll); break; } else break; }
+  FAM_KEYS.forEach(function(k){ const a=acc[k]; setSrc('fam-trail-'+k, a.length>=2 ? lineFeature(a.map(function(p){return [p[1],p[0]];})) : emptyFC); });
+}
+function famSetFullData(){
+  const acc={st_roch:[],st_roch_1945:[],nascopie:[],sled:[]};
+  famSegs.forEach(function(p){ if(p.kind!=='travel') return; acc[p.key].push(p.geom.map(function(pt){return [pt[1],pt[0]];})); });
+  FAM_KEYS.forEach(function(k){ setSrc('fam-full-'+k, acc[k].length ? multiLine(acc[k]) : emptyFC); });
+  setSrc('fam-onward', (FAM.shipOnward&&FAM.shipOnward.length>1) ? lineFeature(FAM.shipOnward.map(function(p){return [p[1],p[0]];})) : emptyFC);
+  const sideLines=[]; (FAM.side||[]).forEach(function(s){ if(s.trip&&s.trip.length>1) sideLines.push(s.trip.map(function(p){return [p[1],p[0]];})); });
+  setSrc('fam-side', sideLines.length ? multiLine(sideLines) : emptyFC);
+}
+function famSetMarkerOn(i,on){ const mk=famStopMarkers[i]; if(!mk||mk._on===on) return; mk._on=on; if(on) mk.addTo(map); else mk.remove(); }
+function famSideOn(on){ if(!famSideMarker||famSideMarker._on===on) return; famSideMarker._on=on; if(on) famSideMarker.addTo(map); else famSideMarker.remove(); }
+function famBuildTimelineUI(){ const c=document.getElementById('famtimeline'); if(!c) return; c.innerHTML=''; famTiEls=[]; famStops.forEach(function(s,i){ const it=el('div','fam-ti'); const num=el('div','fam-ti-num'+(s.approx?' k-est':''), String(s.n||'')); num.style.background=famColorOf(s.key); num.style.color=famTextColor(s.key); const body=el('div','fam-ti-body'); body.appendChild(el('div','fam-ti-ttl', s.title)); body.appendChild(el('div','fam-ti-place', s.place)); body.appendChild(el('div','fam-ti-date', s.phase)); it.appendChild(num); it.appendChild(body); it.addEventListener('click', function(){ famSelectStop(i); }); c.appendChild(it); famTiEls.push(it); }); }
+function famBuildFilterUI(){ const c=document.getElementById('famfilter'); if(!c||c.childNodes.length) return; const defs=[['aboard',"Aboard '44",FAM.colors.st_roch],['st_roch45',"Carried west '45",FAM.colors.st_roch_1945],['sled','Dog sled',FAM.colors.sled],['nascopie','Nascopie',FAM.colors.nascopie],['est','Estimated','#cfd9df']]; defs.forEach(function(d){ const b=el('button','famchip on'); const dot=el('span','cdot'); dot.style.background=d[2]; if(d[0]==='est'){ dot.style.background='transparent'; dot.style.border='1.5px dashed '+d[2]; } b.appendChild(dot); b.appendChild(el('span',null,d[1])); b.addEventListener('click', function(){ famFilter[d[0]]=!famFilter[d[0]]; b.classList.toggle('on', famFilter[d[0]]); famApplyFilter(); }); c.appendChild(b); }); }
+function famVisible(s){ const cat=famCatOf(s.key); if(famFilter[cat]===false) return false; if(s.approx && famFilter.est===false) return false; return true; }
+function famApplyFilter(){ if(famPlaying||famEngaged) return; famStops.forEach(function(s,i){ famSetMarkerOn(i, famVisible(s)); }); }
+function famBuildMarkers(){
+  famStopMarkers=famStops.map(function(s){
+    const e=document.createElement('div'); e.className='fam-div';
+    const cls='fam-num'+(s.approx?' est':'')+(s.event?' evt':'');
+    e.innerHTML='<div class="'+cls+'" style="background:'+famColorOf(s.key)+';color:'+famTextColor(s.key)+'">'+(s.n||'')+'</div>';
+    e.addEventListener('click', function(ev){ ev.stopPropagation(); famShowLogCard(s); });
+    const mk=new maplibregl.Marker({element:e,anchor:'center'}).setLngLat([s.lng,s.lat]); mk._on=false; return mk;
+  });
+  famSideMarker=null;
+  const sd=(FAM.side||[])[0];
+  if(sd){ const e=document.createElement('div'); e.className='fam-side-div'; e.innerHTML='<div class="fam-side-dot"></div>'; e.addEventListener('click',function(ev){ ev.stopPropagation(); famShowLogCard({key:'sled',approx:true,phase:sd.phase,n:null,place:sd.place,title:sd.title,note:sd.note,dateMs:famIso('1945-02-01'),lat:sd.lat,lng:sd.lng}); }); famSideMarker=new maplibregl.Marker({element:e,anchor:'center'}).setLngLat([sd.lng,sd.lat]); famSideMarker._on=false; }
+  famBuildTimelineUI();
+}
+function famRevealUpTo(idx){ if(idx===famLastReached) return; famLastReached=idx; for(let i=0;i<famStops.length;i++){ famSetMarkerOn(i, i<=idx); } famTiEls.forEach(function(e,i){ if(e) e.classList.toggle('active', i===idx); }); }
+function famRenderFrame(t){
+  const st=famStateAt(t);
+  famEnsureShip(st.key); famSetKey(st.key);
+  famShip.setLngLat(LL(st.ll));
+  if(famShipInner){ famShipInner.style.transform = (st.kind==='travel' && st.key!=='sled') ? 'rotate('+st.brg+'deg)' : 'rotate(0deg)'; }
+  famPaintTrail(t);
+  if(!reduceMotion && familyMode && !famCamIntro && !userInteracting) map.setCenter(LL(st.ll));
+  famRevealUpTo(st.reached);
+  if(st.reached>=0 && st.reached!==famLastCardIdx){ famLastCardIdx=st.reached; famShowLogCard(famStops[st.reached]); }
+  let small;
+  if(st.kind==='dwell' && st.dwellKind==='herschel') small='Wintering alone at Herschel \u2014 the St. Roch has sailed on';
+  else if(st.kind==='dwell' && st.dwellKind==='camb') small='A second winter at Cambridge Bay';
+  else { const cs=(st.reached>=0?famStops[st.reached]:null); const m=st.key==='sled'?'By dog sled':(st.key==='nascopie'?'Aboard the Nascopie':'Aboard the St. Roch'); small=m+(cs?' \u00b7 '+cs.title:''); }
+  setReadout(famDate(st.dateMs), small);
+  if(famTime) famTime.textContent=famMY(st.dateMs);
+  if(famScrub && !famScrubbing) famScrub.value=Math.round((t/(famTotalT||1))*1000);
+}
+function famShowStatic(){
+  famEngaged=false;
+  setVis(FAM_TRAIL_LAYERS,false); famRemoveShip();
+  setVis(['fam-onward','fam-side'],true); setVis(FAM_FULL_LAYERS,true);
+  famStops.forEach(function(s,i){ famSetMarkerOn(i, famVisible(s)); }); famSideOn(true);
+}
+function famShowPlay(){
+  if(famEngaged) return; famEngaged=true;
+  setVis(FAM_FULL_LAYERS,false); setVis(['fam-side'],false);
+  for(let i=0;i<famStops.length;i++) famSetMarkerOn(i,false); famSideOn(false);
+  setVis(['fam-onward'],true); setVis(FAM_TRAIL_LAYERS,true);
+  famEnsureShip('st_roch'); famLastReached=-2; famLastCardIdx=-2;
+}
+function famHideAll(){
+  setVis(FAM_FULL_LAYERS,false); setVis(FAM_TRAIL_LAYERS,false); setVis(['fam-onward','fam-side'],false);
+  for(let i=0;i<famStops.length;i++) famSetMarkerOn(i,false); famSideOn(false); famRemoveShip();
+}
+function famBuildLayers(){ if(famBuilt||!FAM) return; famBuilt=true; famBuildTimeline(); famSetFullData(); famBuildMarkers(); famBuildFilterUI(); }
+function famBoundsAll(){ const b=new maplibregl.LngLatBounds(); (FAM.aboard.geom||[]).forEach(function(p){ b.extend([p[1],p[0]]); }); (FAM.home||[]).forEach(function(p){ b.extend([p.lng,p.lat]); (p.via||[]).forEach(function(v){ b.extend([v[1],v[0]]); }); }); return b; }
+function famSetPlayUI(p){ if(famPlayBtn){ famPlayBtn.innerHTML=p?'\u23f8':'\u25b6'; famPlayBtn.title=p?'Pause':'Play the family\u2019s journey'; } }
+function famPlayStart(){
+  if(famCurT>=famTotalT) famCurT=0;
+  famShowPlay(); famPlaying=true; famLastTs=0; famSetPlayUI(true); famRenderFrame(famCurT);
+  const fresh = famCurT===0;
+  if(fresh && !reduceMotion){ famCamIntro=true; const st=famStateAt(0); map.easeTo({center:LL(st.ll), zoom:FOLLOW_Z, pitch:FOLLOW_PITCH, bearing:0, duration:760}); setTimeout(function(){ famCamIntro=false; famLastTs=0; if(famPlaying) famRaf=requestAnimationFrame(famTick); }, 800); }
+  else { if(reduceMotion){ const st=famStateAt(famCurT); map.jumpTo({center:LL(st.ll), zoom:FOLLOW_Z}); } famRaf=requestAnimationFrame(famTick); }
+}
+function famPause(){ famPlaying=false; if(famRaf) cancelAnimationFrame(famRaf); famRaf=null; famSetPlayUI(false); }
+function famTogglePlay(){ if(famPlaying) famPause(); else famPlayStart(); }
+function famTick(ts){ if(!famPlaying) return; if(!famLastTs) famLastTs=ts; const dt=(ts-famLastTs)*speedMul; famLastTs=ts; famCurT+=dt; if(famCurT>=famTotalT){ famCurT=famTotalT; famRenderFrame(famCurT); famPause(); return; } famRenderFrame(famCurT); famRaf=requestAnimationFrame(famTick); }
+function famSeek(t){ famShowPlay(); famCamIntro=false; famCurT=Math.max(0,Math.min(t,famTotalT)); famRenderFrame(famCurT); if(famPlaying) famLastTs=0; }
+function famStep(dir){ const r=famStateAt(famCurT).reached; const target=Math.max(0,Math.min(famStops.length-1,(r<0?0:r)+dir)); famSeek(famStops[target].t+1); }
+function enterFamily(){
+  if(!FAM) return;
+  resetPlayback();
+  familyMode=true; document.body.classList.add('familymode');
+  if(famBtn) famBtn.innerHTML='Exit the family\u2019s journey';
+  toggleLayers(false); famOverlayOn=false; famOverlayChip();
+  ['v1-core','v2-core'].forEach(function(id){ if(map.getLayer(id)) map.setPaintProperty(id,'line-opacity',.16); });
+  ['v1-casing','v2-casing'].forEach(function(id){ if(map.getLayer(id)) map.setPaintProperty(id,'line-opacity',.10); });
+  hideLogCard(); famBuildLayers();
+  famCurT=0; famPlaying=false; famEngaged=false; famLastReached=-2; famLastCardIdx=-2; famSetPlayUI(false);
+  if(famScrub) famScrub.value=0; if(famTime) famTime.textContent=famMY(famIso(FAM.aboard.startDate));
+  famShowStatic();
+  map.fitBounds(famBoundsAll(),{padding:{top:70,right:70,bottom:90,left:70}});
+  setReadout('1944\u20131946','The Panikpakuttuk family \u2014 press play, or tap a numbered stop');
+}
+function exitFamily(){
+  familyMode=false; famPlaying=false; if(famRaf) cancelAnimationFrame(famRaf); famRaf=null; famCamIntro=false;
+  document.body.classList.remove('familymode');
+  if(famBtn) famBtn.innerHTML='Panikpakuttuk family\u2019s journey';
+  famHideAll(); famEngaged=false; famLastReached=-2;
+  ['v1-core','v2-core'].forEach(function(id){ if(map.getLayer(id)) map.setPaintProperty(id,'line-opacity',.95); });
+  ['v1-casing','v2-casing'].forEach(function(id){ if(map.getLayer(id)) map.setPaintProperty(id,'line-opacity',.7); });
+  YRS.forEach(function(y){ yearOn[y]=true; });
+  showFullRoute(); applyMarkerFilter(); hideLogCard();
+  if(!reduceMotion) map.easeTo({pitch:0,duration:500});
+  fitRoute();
+}
+if(famBtn) famBtn.addEventListener('click',function(){ if(familyMode) exitFamily(); else enterFamily(); });
+if(famPlayBtn) famPlayBtn.addEventListener('click', famTogglePlay);
+if(famPrevBtn) famPrevBtn.addEventListener('click',function(){ famStep(-1); });
+if(famNextBtn) famNextBtn.addEventListener('click',function(){ famStep(1); });
+if(famScrub){ famScrub.addEventListener('input',function(){ famScrubbing=true; famSeek((parseInt(famScrub.value,10)/1000)*famTotalT); }); famScrub.addEventListener('change',function(){ famScrubbing=false; if(famPlaying) famLastTs=0; }); famScrub.addEventListener('pointerup',function(){ famScrubbing=false; }); }
+
+/* family highlight stats */
+(function(){ const c=document.getElementById('famstats'); if(!c||!FAM||!FAM.stats) return; FAM.stats.forEach(function(st){ const d=el('div','famstat'); const v=el('div','v'+(/[~,]/.test(st.value)?' mono':'')); v.textContent=st.value; d.append(v); d.append(el('div','l', st.label)); if(st.sub) d.append(el('div','s', st.sub)); c.append(d); }); })();
+
+/* quick family-route overlay on the main map */
+function famOverlayChip(){ if(famRouteBtn) famRouteBtn.classList.toggle('on', famOverlayOn); }
+function showFamilyOverlay(){ if(!FAM) return; resetPlayback(); famBuildLayers(); famOverlayOn=true; YRS.forEach(function(y){ yearOn[y]=false; }); applyMarkerFilter(); setVis(FAM_FULL_LAYERS,true); setVis(['fam-onward','fam-side'],true); famStops.forEach(function(s,i){ famSetMarkerOn(i, famVisible(s)); }); famSideOn(true); famOverlayChip(); setReadout('1944\u20131946','Panikpakuttuk route overlaid \u2014 tap a numbered stop'); }
+function hideFamilyOverlay(){ famOverlayOn=false; if(!familyMode){ famHideAll(); YRS.forEach(function(y){ yearOn[y]=true; }); applyMarkerFilter(); } famOverlayChip(); }
+function toggleFamilyOverlay(){ if(famOverlayOn) hideFamilyOverlay(); else showFamilyOverlay(); }
+if(famRouteBtn) famRouteBtn.addEventListener('click', toggleFamilyOverlay);
+if(!FAM){ if(famBtn) famBtn.style.display='none'; const fsf=document.querySelector('.famstory-field'); if(fsf) fsf.style.display='none'; }
+
+/* ---------- initial framing ---------- */
+map.on('load', function(){ fitRoute({duration:0}); applyMarkerFilter(); });
+</script>
+</body>
+</html>
